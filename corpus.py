@@ -1,42 +1,48 @@
 import nltk
 import itertools
-
-DEFAULT_CORPUS = 'teddy.txt'
-DEFAULT_CORPUS = nltk.corpus.gutenberg.words('austen-emma.txt')
-DEFAULT_CORPUS = nltk.corpus.brown.sents(categories='romance')
+from config import CORPUSES
+        
 
 class Corpus(object):
-    _instance = None
-    text = ''
+    texts = {}
+    active = []
 
     def __new__(cls, *args, **kwargs):
-        if not cls.text:
-            cls.text = cls.load_corpus()
+        if not cls.texts:
+            cls.load_corpus()
         return super(Corpus, cls).__new__(cls, *args, **kwargs)
 
     @classmethod
     def load_corpus(cls):
-        print 'Loading corpus.....'
-        corpus = DEFAULT_CORPUS
+        print 'Loading corpuses.....'
+        for corpus_name, corpus in CORPUSES.iteritems():
 
-        ## this is sketchy.... fix this
-        if isinstance(corpus, str):
-            with open(corpus, 'r') as f:
-                raw = f.read()
-                tokens = nltk.wordpunct_tokenize(raw)
-        elif isinstance(corpus, nltk.corpus.reader.util.ConcatenatedCorpusView):
-            tokens = list(itertools.chain(*corpus))
-        elif isinstance(corpus, nltk.corpus.reader.util.StreamBackedCorpusView):
-            tokens = corpus
-        else:
-            raise NotImplemented
+            ## this is sketchy.... fix this
+            if isinstance(corpus, str):
+                with open(corpus, 'r') as f:
+                    raw = f.read()
+                    tokens = nltk.wordpunct_tokenize(raw)
+            elif isinstance(corpus, nltk.corpus.reader.util.ConcatenatedCorpusView):
+                tokens = list(itertools.chain(*corpus))
+            elif isinstance(corpus, nltk.corpus.reader.util.StreamBackedCorpusView):
+                tokens = corpus
+            else:
+                raise NotImplemented
 
-        text = nltk.Text(tokens)
-        return text
+            text = nltk.Text(tokens)
+
+            ## eck... corpus is not immutable and should not be uesd as a key
+            cls.texts[corpus_name] = text
+            cls.active.append(corpus_name)
 
     @classmethod
     def word_lookup(cls, word):
-        return cls.text.concordance(word)
+        result = ''
+        for corpus_name in cls.active:
+            concordance = cls.texts[corpus_name].concordance(word)
+            if concordance:
+                result += concordance + '\n'
+        return result
 
     @classmethod
     def related_words(cls, word):
@@ -52,7 +58,7 @@ class Corpus(object):
 
     @classmethod
     def __str__(cls):
-        return str(DEFAULT_CORPUS)
+        return ''.join([x+' ' for x in CORPUSES.keys()])
 
 
 class UserHistory(object):

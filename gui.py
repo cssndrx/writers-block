@@ -35,6 +35,16 @@ class MyWindow(QWidget):
         self.corpuses.setFont(font)
         self.corpuses.setText(str(Corpus()))
 
+        # track the health
+        healthGrid = QGridLayout()
+        healthGrid.addWidget(QLabel('Teddy'), 0, 0)
+        healthGrid.addWidget(QLabel('24'), 0, 1)
+        healthGrid.addWidget(QLabel(''), 1, 0)
+        healthGrid.addWidget(QLabel(''), 1, 1)
+        healthGrid.addWidget(QLabel(''), 2, 0)
+        healthGrid.addWidget(QLabel(''), 2, 1)
+
+
         # window parameters
         self.setGeometry(100, 100, 800, 700)
 
@@ -45,11 +55,11 @@ class MyWindow(QWidget):
         layout.addWidget(lbl2)
         layout.addWidget(self.output)
         layout.addWidget(lbl3)
-        layout.addWidget(self.corpuses)
+        layout.addLayout(healthGrid)
         self.setLayout(layout)
 
         # connections
-        self.connect(self.input, SIGNAL("spacePressed"),
+        self.connect(self.input, SIGNAL('SPACE_PRESSED'),
                      self.update)
 
     def update(self):
@@ -84,7 +94,7 @@ class MyTextEdit(QTextEdit):
         
     def event(self, event):
         if (event.type()==QEvent.KeyPress) and (event.key()==Qt.Key_Space):
-            self.emit(SIGNAL("spacePressed")) 
+            self.emit(SIGNAL('SPACE_PRESSED')) 
 
         return QTextEdit.event(self, event)
 
