@@ -54,8 +54,7 @@ class MyWindow(QWidget):
 
     def update(self):
         last_word = self.get_last_word()
-        if not last_word:
-            return
+        if not last_word: return
         
         corpus = Corpus()
         corpus_output = corpus.word_lookup(last_word)
@@ -66,7 +65,8 @@ class MyWindow(QWidget):
         words = [str(t) for t in tokens if str(t).isalpha()]
         print 'words', words
 
-        last_word = words[-1] if len(words) > 0 return None 
+        last_word = words[-1] if len(words) > 0 else None
+        return last_word
 
 ####################################################################
 class MyTextEdit(QTextEdit):

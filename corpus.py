@@ -1,22 +1,21 @@
 import nltk
 
-DEFAULT_CORPUS = nltk.corpus.gutenberg.words('austen-emma.txt')
 DEFAULT_CORPUS = 'teddy.txt'
+DEFAULT_CORPUS = nltk.corpus.gutenberg.words('austen-emma.txt')
 
 class Corpus(object):
     _instance = None
+    text = ''
+
     def __new__(cls, *args, **kwargs):
-        if not cls._instance:
-            cls._instance = super(Corpus, cls).__new__(
-                                cls, *args, **kwargs)
-        return cls._instance
+        if not cls.text:
+            cls.text = cls.load_corpus()
+        return super(Corpus, cls).__new__(cls, *args, **kwargs)
 
-    def __init__(self, corpus=DEFAULT_CORPUS):
-        self.corpus = corpus
-        self.text = self.load_corpus(corpus)
-
-    def load_corpus(self, corpus):
+    @classmethod
+    def load_corpus(cls):
         print 'Loading corpus.....'
+        corpus = DEFAULT_CORPUS
 
         if isinstance(corpus, str):
             with open(corpus, 'r') as f:
@@ -28,31 +27,23 @@ class Corpus(object):
         text = nltk.Text(tokens)
         return text
 
-    def word_lookup(self, word):
-        return self.text.concordance(word)
+    @classmethod
+    def word_lookup(cls, word):
+        return cls.text.concordance(word)
 
-    def related_words(self, word):
-        return self.text.similar(word)
+    @classmethod
+    def related_words(cls, word):
+        return cls.text.similar(word)
 
-    def generate(self, context=[]):
+    @classmethod
+    def generate(cls, context=[]):
         """
         context := list of strings of nearby context upon which to generate
                     e.g ['Mighty', 'fine', 'day', 'we', 'have', 'here']
         """
-        return self.text.generate(context=context)
+        return cls.text.generate(context=context)
 
-    def __str__(self):
-        return str(self.corpus)
+    @classmethod
+    def __str__(cls):
+        return 'working??'
 
-if __name__ == '__main__':
-    s1=Corpus()
-    s2=Corpus()
-    if(id(s1)==id(s2)):
-        print "Same"
-    else:
-        print "Different"
-        assert False, 'singularity violated'
-
-    print 'return', s1.word_lookup("the")
-    print 'return', s1.related_words("the")
-    print 'return', s1.generate("the")
