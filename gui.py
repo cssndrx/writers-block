@@ -1,8 +1,10 @@
 import sys
+import nltk
 from PyQt4.QtCore import * 
 from PyQt4.QtGui import * 
-from corpus import Corpus, UserHistory
-import nltk
+
+from corpus import Corpus, Library
+from config import CORPUSES
 
 #################################################################### 
 def main(): 
@@ -33,29 +35,38 @@ class MyWindow(QWidget):
         self.corpuses = QLineEdit()
         self.corpuses.setReadOnly(True)
         self.corpuses.setFont(font)
-        self.corpuses.setText(str(Corpus()))
+        self.corpuses.setText(str(Library()))
 
         # track the health
         healthGrid = QGridLayout()
-        healthGrid.addWidget(QLabel('Teddy'), 0, 0)
-        healthGrid.addWidget(QLabel('24'), 0, 1)
-        healthGrid.addWidget(QLabel(''), 1, 0)
-        healthGrid.addWidget(QLabel(''), 1, 1)
-        healthGrid.addWidget(QLabel(''), 2, 0)
-        healthGrid.addWidget(QLabel(''), 2, 1)
+        self.healthLabel = []
+        for i, corpus_name in enumerate(CORPUSES.keys()):
+            healthGrid.addWidget(QLabel(corpus_name), i, 0)
+
+            self.healthLabel.append( QLabel('-') )
+            healthGrid.addWidget(self.healthLabel[i], i, 1)
 
 
         # window parameters
         self.setGeometry(100, 100, 800, 700)
 
         # layout
-        layout = QVBoxLayout()
-        layout.addWidget(lbl1)
-        layout.addWidget(self.input)
-        layout.addWidget(lbl2)
-        layout.addWidget(self.output)
-        layout.addWidget(lbl3)
-        layout.addLayout(healthGrid)
+        text_layout = QVBoxLayout()
+        text_layout.addWidget(lbl1)
+        text_layout.addWidget(self.input)
+        text_layout.addWidget(lbl2)
+        text_layout.addWidget(self.output)
+
+
+        health_layout = QVBoxLayout()
+        health_layout.addWidget(lbl3)
+        health_layout.addLayout(healthGrid)
+        health_layout.addStretch(1)
+
+        layout = QHBoxLayout()
+        layout.addLayout(text_layout)
+        layout.addLayout(health_layout)
+
         self.setLayout(layout)
 
         # connections
@@ -66,19 +77,12 @@ class MyWindow(QWidget):
         last_word = self.get_last_word()
         if not last_word: return
 
-
-        UserHistory.add_to_history(last_word,
-                                   self.is_hit(last_word))
-        print 'health', UserHistory.get_health()
-
         print 'last_word', last_word
-        corpus_output = Corpus.word_lookup(last_word)
-        if corpus_output:
-            self.output.setText(corpus_output)
+        corpus_output = Library.word_lookup(last_word)
+        if corpus_output: self.output.setText(corpus_output)
 
-    def is_hit(self, word):
-        return word in self.output.toPlainText()
-
+        self.render_health()
+        
     def get_last_word(self):
         tokens = nltk.wordpunct_tokenize(self.input.toPlainText())
         words = [str(t) for t in tokens if str(t).isalpha()]
@@ -86,6 +90,11 @@ class MyWindow(QWidget):
 
         last_word = words[-1] if len(words) > 0 else None
         return last_word
+
+    def render_health(self):
+        for i, (corpus_name, health) in enumerate(Library.get_health()):
+            self.healthLabel[i].setText('%.2f' % health)
+        
 
 ####################################################################
 class MyTextEdit(QTextEdit):

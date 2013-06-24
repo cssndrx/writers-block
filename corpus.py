@@ -2,78 +2,93 @@ import nltk
 import itertools
 from config import CORPUSES
         
-
-class Corpus(object):
-    texts = {}
-    active = []
+class Library(object):
+    corpuses = []
 
     def __new__(cls, *args, **kwargs):
-        if not cls.texts:
-            cls.load_corpus()
-        return super(Corpus, cls).__new__(cls, *args, **kwargs)
+        if not cls.corpuses:
+            cls.load_corpuses()
+        return super(Library, cls).__new__(cls, *args, **kwargs)
 
     @classmethod
-    def load_corpus(cls):
+    def load_corpuses(cls):
         print 'Loading corpuses.....'
         for corpus_name, corpus in CORPUSES.iteritems():
-
-            ## this is sketchy.... fix this
-            if isinstance(corpus, str):
-                with open(corpus, 'r') as f:
-                    raw = f.read()
-                    tokens = nltk.wordpunct_tokenize(raw)
-            elif isinstance(corpus, nltk.corpus.reader.util.ConcatenatedCorpusView):
-                tokens = list(itertools.chain(*corpus))
-            elif isinstance(corpus, nltk.corpus.reader.util.StreamBackedCorpusView):
-                tokens = corpus
-            else:
-                raise NotImplemented
-
-            text = nltk.Text(tokens)
-
-            ## eck... corpus is not immutable and should not be uesd as a key
-            cls.texts[corpus_name] = text
-            cls.active.append(corpus_name)
-
+            print 'Loading.....', corpus_name
+            cls.corpuses.append(Corpus(corpus_name, corpus))
+    
     @classmethod
     def word_lookup(cls, word):
         result = ''
-        for corpus_name in cls.active:
-            concordance = cls.texts[corpus_name].concordance(word)
-            if concordance:
-                result += concordance + '\n'
+        for corpus in cls.corpuses:
+            word_rec = corpus.word_lookup(word)
+            if word_rec:
+                result += word_rec + '\n'
         return result
 
     @classmethod
-    def related_words(cls, word):
-        return cls.text.similar(word)
-
-    @classmethod
-    def generate(cls, context=[]):
-        """
-        context := list of strings of nearby context upon which to generate
-                    e.g ['Mighty', 'fine', 'day', 'we', 'have', 'here']
-        """
-        return cls.text.generate(context=context)
+    def get_health(cls):
+        return [(c.corpus_name, c.get_health()) for c in cls.corpuses]
 
     @classmethod
     def __str__(cls):
-        return ''.join([x+' ' for x in CORPUSES.keys()])
+        return ''.join(str(corpus)+' ' for corpus in cls.corpuses)
+    
+class Corpus(object):
+
+    def __init__(self, corpus_name, corpus):
+        self.corpus_name = corpus_name
+        self.text = self.load_corpus(corpus)
+        self.last_rec = ''
+        self.health = []
+        
+    def load_corpus(self, corpus):
+        tokens = self.corpus_to_tokens(corpus)
+        return nltk.Text(tokens)
+
+    def corpus_to_tokens(self, corpus):
+        ## this is sketchy.... fix this
+        if isinstance(corpus, str):
+            with open(corpus, 'r') as f:
+                raw = f.read()
+                tokens = nltk.wordpunct_tokenize(raw)
+        elif isinstance(corpus, nltk.corpus.reader.util.ConcatenatedCorpusView):
+            tokens = list(itertools.chain(*corpus))
+        elif isinstance(corpus, nltk.corpus.reader.util.StreamBackedCorpusView):
+            tokens = corpus
+        else:
+            raise NotImplemented
+        return tokens
+    
+    def update_health(self, word):
+        if word.lower() in self.last_rec.lower():
+            self.health.append(word)
+        else:
+            self.health.append(None)
+    
+    def word_lookup(self, word):
+        self.update_health(word)
+        
+        rec = self.text.concordance(word)
+        if rec: self.last_rec = rec
+        return rec
+
+    def get_health(self):
+        return 1 - self.health.count(None) / float(len(self.health))
+    
+    def __str__(self):
+        return self.corpus_name
+    
+##    @classmethod
+##    def related_words(cls, word):
+##        return cls.text.similar(word)
+##
+##    @classmethod
+##    def generate(cls, context=[]):
+##        """
+##        context := list of strings of nearby context upon which to generate
+##                    e.g ['Mighty', 'fine', 'day', 'we', 'have', 'here']
+##        """
+##        return cls.text.generate(context=context)
 
 
-class UserHistory(object):
-
-    ## keeps track of user history
-    ## number of suggestions that were taken, etc.
-
-    user_history = []
-    hit_or_miss = []
-
-    @classmethod
-    def add_to_history(cls, word, isHit):
-        cls.user_history.append(word)
-        cls.hit_or_miss.append(isHit)
-
-    @classmethod
-    def get_health(cls):
-        return sum(cls.hit_or_miss)/float(len(cls.hit_or_miss))
