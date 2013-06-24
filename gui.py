@@ -60,7 +60,8 @@ class MyWindow(QWidget):
         UserHistory.add_to_history(last_word,
                                    self.is_hit(last_word))
         print 'health', UserHistory.get_health()
-        
+
+        print 'last_word', last_word
         corpus_output = Corpus.word_lookup(last_word)
         if corpus_output:
             self.output.setText(corpus_output)

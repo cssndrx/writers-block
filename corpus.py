@@ -1,7 +1,9 @@
 import nltk
+import itertools
 
 DEFAULT_CORPUS = 'teddy.txt'
 DEFAULT_CORPUS = nltk.corpus.gutenberg.words('austen-emma.txt')
+DEFAULT_CORPUS = nltk.corpus.brown.sents(categories='romance')
 
 class Corpus(object):
     _instance = None
@@ -17,12 +19,17 @@ class Corpus(object):
         print 'Loading corpus.....'
         corpus = DEFAULT_CORPUS
 
+        ## this is sketchy.... fix this
         if isinstance(corpus, str):
             with open(corpus, 'r') as f:
                 raw = f.read()
                 tokens = nltk.wordpunct_tokenize(raw)
+        elif isinstance(corpus, nltk.corpus.reader.util.ConcatenatedCorpusView):
+            tokens = list(itertools.chain(*corpus))
         elif isinstance(corpus, nltk.corpus.reader.util.StreamBackedCorpusView):
             tokens = corpus
+        else:
+            raise NotImplemented
 
         text = nltk.Text(tokens)
         return text
@@ -45,7 +52,7 @@ class Corpus(object):
 
     @classmethod
     def __str__(cls):
-        return 'working??'
+        return str(DEFAULT_CORPUS)
 
 
 class UserHistory(object):
