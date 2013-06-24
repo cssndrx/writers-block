@@ -47,3 +47,20 @@ class Corpus(object):
     def __str__(cls):
         return 'working??'
 
+
+class UserHistory(object):
+
+    ## keeps track of user history
+    ## number of suggestions that were taken, etc.
+
+    user_history = []
+    hit_or_miss = []
+
+    @classmethod
+    def add_to_history(cls, word, isHit):
+        cls.user_history.append(word)
+        cls.hit_or_miss.append(isHit)
+
+    @classmethod
+    def get_health(cls):
+        return sum(cls.hit_or_miss)/float(len(cls.hit_or_miss))

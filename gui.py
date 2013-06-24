@@ -1,7 +1,7 @@
 import sys
 from PyQt4.QtCore import * 
 from PyQt4.QtGui import * 
-from corpus import Corpus
+from corpus import Corpus, UserHistory
 import nltk
 
 #################################################################### 
@@ -55,10 +55,18 @@ class MyWindow(QWidget):
     def update(self):
         last_word = self.get_last_word()
         if not last_word: return
+
+
+        UserHistory.add_to_history(last_word,
+                                   self.is_hit(last_word))
+        print 'health', UserHistory.get_health()
         
-        corpus = Corpus()
-        corpus_output = corpus.word_lookup(last_word)
-        if corpus_output: self.output.setText(corpus_output)
+        corpus_output = Corpus.word_lookup(last_word)
+        if corpus_output:
+            self.output.setText(corpus_output)
+
+    def is_hit(self, word):
+        return word in self.output.toPlainText()
 
     def get_last_word(self):
         tokens = nltk.wordpunct_tokenize(self.input.toPlainText())
