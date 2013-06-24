@@ -1,0 +1,76 @@
+NLTK
+
+
+<class 'nltk.text.Text'>
+
+=======
+concordance -- show every occurence of a word WITH CONTEXT!!!
+
+y haven ' t you phoned ? Are you all right ?" " I tried to get you last night a
+one he re ' s been --" " Are you all right , Murie l ?" The girl increased the 
+. But , no , he had to - Are you all right , Murie l ? Tell me the truth ." " I
+
+=======
+similar -- show words that appear in similar contexts as a given word
+
+=======
+generate -- random text (each time is different)
+
+=======
+FreqDist(text1) -- automatically generates a freq distribution
+fdist1.plot(cumulative=True)
+
+=======
+collocations -- high information bigrams
+
+=======
+>>> '30000'.isdigit()
+>>> '30000'.isalpha()
+>>> '30000'.isalnum()
+
+=======
+It seems crazy that we do not offer any autocomplete/suggestions as people type. 
+
+the balance of the corpus is important
+
+=======
+zomg: load your own corpus using PlaintextCorpusReader
+
+build a ConditionalFreqDist from a list of tuples
+
+
+ideas
+real time classifier between corpuses that enables autocompletion
+wordnet/verbnet for offering diction ideas
+
+two modes: mimic vs create
+
+wordnet makes it easy to navigate between concepts
+hyponym
+hypernym
+
+meronym
+holonym
+
+lots more books available on gutenberg
+
+parse via this awesome function
+text = nltk.wordpunct_tokenize(raw)
+text = nltk.Text(tokens)
+
+
+find and rfind to get indices
+
+raw = nltk.clean_html(html)
+
+python strings are immutable
+print x, => " " instead of "\n"
+
+
+nice:
+search: anywhere, returns matchobject --- match: from beginning
+[w for w in wordlist if re.search('^..j..t..$', w)]
+
+findall:
+returns a list
+
