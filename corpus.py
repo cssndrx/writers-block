@@ -1,7 +1,9 @@
 import nltk
 import itertools
 from config import CORPUSES
-        
+
+MAX_CORPUSES = min(len(CORPUSES), 3)
+
 class Library(object):
     corpuses = []
 
@@ -19,16 +21,30 @@ class Library(object):
     
     @classmethod
     def word_lookup(cls, word):
-        result = ''
-        for corpus in cls.corpuses:
-            word_rec = corpus.word_lookup(word)
-            if word_rec:
-                result += word_rec + '\n'
-        return result
+        all_matches = []
+        for corpus in cls.get_health()[:MAX_CORPUSES]:
+            corpus_rec = corpus.word_lookup(word)
+            if corpus_rec:
+                all_matches.append(corpus_rec)
+        
+        return ''.join([x+'\n' for x in all_matches])
+
+    ## todo: remove this code duplication with word_lookup
+    @classmethod
+    def related_words(cls, word):
+        all_matches = []
+        for corpus in cls.get_health()[:MAX_CORPUSES]:
+            corpus_rec = corpus.related_words(word)
+            if corpus_rec:
+                all_matches.append(corpus_rec)
+        
+        return ''.join([x+'\n' for x in all_matches])
 
     @classmethod
     def get_health(cls):
-        return [(c.corpus_name, c.get_health()) for c in cls.corpuses]
+        return sorted([corpus for corpus in cls.corpuses],
+                          reverse=True,
+                          key = lambda x:x.get_health())
 
     @classmethod
     def __str__(cls):
@@ -41,6 +57,9 @@ class Corpus(object):
         self.text = self.load_corpus(corpus)
         self.last_rec = ''
         self.health = []
+
+        ##build indices before the gui renders 
+        self.text.concordance('blah')
         
     def load_corpus(self, corpus):
         tokens = self.corpus_to_tokens(corpus)
@@ -62,7 +81,7 @@ class Corpus(object):
     
     def update_health(self, word):
         if word.lower() in self.last_rec.lower():
-            self.health.append(word)
+            self.health.append(word) ## +health for having it in the recommendation
         else:
             self.health.append(None)
     
@@ -70,25 +89,27 @@ class Corpus(object):
         self.update_health(word)
         
         rec = self.text.concordance(word)
-        if rec: self.last_rec = rec
+        if rec:
+            self.last_rec = rec
+            self.health.append(word) ## +health for having it in the corpus
+        else:
+            self.health.append(None)
         return rec
 
     def get_health(self):
-        return 1 - self.health.count(None) / float(len(self.health))
+        return 1 - self.health.count(None) / float(len(self.health) + 1)
     
     def __str__(self):
         return self.corpus_name
     
-##    @classmethod
-##    def related_words(cls, word):
-##        return cls.text.similar(word)
-##
-##    @classmethod
-##    def generate(cls, context=[]):
-##        """
-##        context := list of strings of nearby context upon which to generate
-##                    e.g ['Mighty', 'fine', 'day', 'we', 'have', 'here']
-##        """
-##        return cls.text.generate(context=context)
+    def related_words(self, word):
+        return self.text.similar(word)
+
+    def generate(self, context=[]):
+        """
+        context := list of strings of nearby context upon which to generate
+                    e.g ['Mighty', 'fine', 'day', 'we', 'have', 'here']
+        """
+        return self.text.generate(context=context)
 
 

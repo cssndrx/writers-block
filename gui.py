@@ -19,9 +19,9 @@ class MyWindow(QWidget):
         QWidget.__init__(self, *args)
 
         # create objects
-        font = QFont()
-        font.setFamily('Courier')
+        font = QFont('Courier', 12, QFont.Light)
 
+        ## todo: remove this code duplication
         lbl1 = QLabel("Write here")
         self.input = MyTextEdit()
         self.input.setFont(font)
@@ -29,6 +29,7 @@ class MyWindow(QWidget):
         lbl2 = QLabel("Suggestions")
         self.output = QTextEdit()
         self.output.setReadOnly(True)
+        self.output.setAcceptRichText(True)
         self.output.setFont(font)
 
         lbl3 = QLabel('Corpuses being used')
@@ -37,18 +38,22 @@ class MyWindow(QWidget):
         self.corpuses.setFont(font)
         self.corpuses.setText(str(Library()))
 
+        lbl4 = QLabel('Word suggestions')
+        self.words = QLineEdit()
+        self.words.setReadOnly(True)
+        self.words.setFont(font)
+
         # track the health
         healthGrid = QGridLayout()
         self.healthLabel = []
         for i, corpus_name in enumerate(CORPUSES.keys()):
-            healthGrid.addWidget(QLabel(corpus_name), i, 0)
-
-            self.healthLabel.append( QLabel('-') )
-            healthGrid.addWidget(self.healthLabel[i], i, 1)
+            self.healthLabel.append( (QLabel(corpus_name), QLabel('-')) )
+            healthGrid.addWidget(self.healthLabel[i][0], i, 0)
+            healthGrid.addWidget(self.healthLabel[i][1], i, 1)
 
 
         # window parameters
-        self.setGeometry(100, 100, 800, 700)
+        self.setGeometry(40, 40, 1000, 800)
 
         # layout
         text_layout = QVBoxLayout()
@@ -56,6 +61,8 @@ class MyWindow(QWidget):
         text_layout.addWidget(self.input)
         text_layout.addWidget(lbl2)
         text_layout.addWidget(self.output)
+        text_layout.addWidget(lbl4)
+        text_layout.addWidget(self.words)
 
 
         health_layout = QVBoxLayout()
@@ -81,6 +88,10 @@ class MyWindow(QWidget):
         corpus_output = Library.word_lookup(last_word)
         if corpus_output: self.output.setText(corpus_output)
 
+## this is backwards looking.... so it doesn't work very well 
+##        related_words = Library.related_words(last_word)
+##        if related_words: self.words.setText(related_words)
+
         self.render_health()
         
     def get_last_word(self):
@@ -91,9 +102,10 @@ class MyWindow(QWidget):
         last_word = words[-1] if len(words) > 0 else None
         return last_word
 
-    def render_health(self):
-        for i, (corpus_name, health) in enumerate(Library.get_health()):
-            self.healthLabel[i].setText('%.2f' % health)
+    def render_health(self):        
+        for i, c in enumerate(Library.get_health()):
+            self.healthLabel[i][0].setText(c.corpus_name)
+            self.healthLabel[i][1].setText('%.2f' % c.get_health())
         
 
 ####################################################################
