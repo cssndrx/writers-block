@@ -58,25 +58,25 @@ class Library(object):
     
     @classmethod
     def word_lookup(cls, word):
-        all_matches = []
-        for corpus in cls.get_health()[:MAX_CORPORA]:
-            corpus_rec = corpus.word_lookup(word)
-            if corpus_rec:
-                all_matches.append(corpus_rec)
-        
-        return ''.join([x+'\n' for x in all_matches])
-
-    ## todo: remove this code duplication with word_lookup
+        return cls.hit_corpora('word_lookup', word)
+    
     @classmethod
     def related_words(cls, word):
+        return cls.hit_corpora('related_words', word)
+
+    @classmethod
+    def hit_corpora(cls, corpus_func, word):
         all_matches = []
         for corpus in cls.get_health()[:MAX_CORPORA]:
-            corpus_rec = corpus.related_words(word)
+
+            func = getattr(corpus, corpus_func)
+            corpus_rec = func(word)
             print 'corpus_rec', corpus_rec
             if corpus_rec:
                 all_matches.append(corpus_rec)
         
         return ''.join([x+'\n' for x in all_matches])
+
 
     @classmethod
     def get_health(cls):
