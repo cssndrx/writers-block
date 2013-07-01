@@ -9,46 +9,51 @@ from config import CORPORA, CORPORA_FOLDER
 
 MAX_CORPORA = min(len(CORPORA), 3)
 
-ENGLISH_SET = set(w.lower() for w in nltk.corpus.words.words())
-ENGLISH_DIST = nltk.FreqDist(nltk.corpus.words.words()) ##HAHA THIS IS WRONG TO-DO
+##TO-DO: get a better english language dist
+from nltk.book import text6
+ENGLISH_DIST = nltk.FreqDist(text6)
 
-def get_english_words(word_list):
-    ## assumes that all words are lower case
-    ## incomplete check
-    if word_list: assert word_list[0] == word_list[0].lower()
+def get_dist_in_english(word_list):
+    occurences = [(w, ENGLISH_DIST[w.lower()]) for w in word_list]
+    return dict(occurences)
+
+def is_rare_by_threshold(x, threshold=3):
+    return ENGLISH_DIST[x] < threshold
+
+def is_stopword(x):
+    return x in nltk.corpus.stopwords.words('english')
+
+def format_matrix(matrix):
+    def invis(x):
+        return ' '*len(x)
+
+    def bold(x):
+        return '<b>' + x + '</b>'
+
+    def identity(x):
+        return x
+
+    tokens = []
+    for word_list in matrix:
+
+        row_tokens = []
+        dist = get_dist_in_english(word_list)
+        for word in word_list:
+            if word.isalpha() and is_rare_by_threshold(word):
+                row_tokens.append(bold(word))
+            else:
+                row_tokens.append(identity(word))
+
+        tokens.append(row_tokens)
+    return tokens
+
+def matrix_to_str(matrix):
+    formatted = format_matrix(matrix)
     
-    text_vocab = set(word_list)
-    return list(text_vocab.intersection(ENGLISH_SET))
-
-def sort_by_unusual(word_list):
-    word_list = [w.lower() for w in word_list]
-
-    ## make sure that it is a word
-    english_words = get_english_words(word_list)
-
-    ## pick the word that has the lowest freq distribution in the english language
-    print 'english_words', [(ENGLISH_DIST[x], x) for x in english_words]
-    english_words.sort(key = lambda x: ENGLISH_DIST[x])
-    return english_words
-
-def process_matrix(matrix):
-    formatted = ""
-    for row in matrix:
-
-        tokens = sort_by_unusual(row)
-
-        if not tokens:
-            return
-        
-        weirdest = tokens[0]
-        print 'weirdest', weirdest
-        ind = [x.lower() for x in row].index(weirdest)
-
-        row[ind] = '<b>' + row[ind] + '</b>'
-
-        formatted += tokenwrap(row) + '\n' ###todo: this string concat might be inefficient?
-    return formatted
-            
+    result = ''
+    for row in formatted:
+        result += tokenwrap(row) + '\n'
+    return result
 
 class Library(object):
     corpora = []
@@ -139,7 +144,8 @@ class Corpus(object):
 #        rec = str(self.text.get_adjacent_tokens(word))
 
         neighbors = self.text.get_adjacent_tokens(word)
-        rec = process_matrix(neighbors)
+#        rec = word_matrix_by_unusual(neighbors)
+        rec = matrix_to_str(neighbors)
         
 #        rec = format_by_unusual(rec)
         if rec:
