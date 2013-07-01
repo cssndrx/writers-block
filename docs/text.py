@@ -170,17 +170,44 @@ class ConcordanceIndex(object):
         return '<ConcordanceIndex for %d tokens (%d types)>' % (
             len(self._tokens), len(self._offsets))
 
-    def print_concordance(self, word, width=75, lines=25):
-        """
-        Print a concordance for ``word`` with the specified context window.
+##    def print_concordance(self, word, width=75, lines=25):
+##        """
+##        Print a concordance for ``word`` with the specified context window.
+##
+##        :param word: The target word
+##        :type word: str
+##        :param width: The width of each line, in characters (default=80)
+##        :type width: int
+##        :param lines: The number of lines to display (default=25)
+##        :type lines: int
+##        """
+##        half_width = (width - len(word) - 2) / 2
+##        context = width/4 # approx number of words of context
+##
+##        offsets = self.offsets(word)
+##        if offsets:
+##            lines = min(lines, len(offsets))
+##            print "Displaying %s of %s matches:" % (lines, len(offsets))
+##            for i in offsets:
+##                if lines <= 0:
+##                    break
+##                left = (' ' * half_width +
+##                        ' '.join(self._tokens[i-context:i]))
+##                right = ' '.join(self._tokens[i+1:i+context])
+##                left = left[-half_width:]
+##                right = right[:half_width]
+##                print left, self._tokens[i], right
+##                lines -= 1
+##        else:
+##            print "No matches"
 
-        :param word: The target word
-        :type word: str
-        :param width: The width of each line, in characters (default=80)
-        :type width: int
-        :param lines: The number of lines to display (default=25)
-        :type lines: int
+    def get_concordance_as_str(self, word, width=75, lines=25):
         """
+        Returns a string of the concordance .... why isn't this nltk default? =_=
+        Returns None if no matches found
+        """
+        concordance_str = ""
+
         half_width = (width - len(word) - 2) / 2
         context = width/4 # approx number of words of context
 
@@ -196,11 +223,42 @@ class ConcordanceIndex(object):
                 right = ' '.join(self._tokens[i+1:i+context])
                 left = left[-half_width:]
                 right = right[:half_width]
-                print left, self._tokens[i], right
+                concordance_str += left + ' ' + self._tokens[i] + ' ' + right + '\n'
+                lines -= 1
+            return concordance_str
+        else:
+            print "No matches"
+
+
+    def get_concordance(self, word, width=75, lines=25):
+        """
+        Returns a list of concordance matches .... why isn't this nltk default? =_=
+        Returns [] if no matches found
+        """
+        concordance = []
+
+        half_width = (width - len(word) - 2) / 2
+        context = width/4 # approx number of words of context
+
+        offsets = self.offsets(word)
+        if offsets:
+            lines = min(lines, len(offsets))
+            print "Displaying %s of %s matches:" % (lines, len(offsets))
+            for i in offsets:
+                if lines <= 0:
+                    break
+                left = (' ' * half_width +
+                        ' '.join(self._tokens[i-context:i]))
+                right = ' '.join(self._tokens[i+1:i+context])
+                left = left[-half_width:]
+                right = right[:half_width]
+                concordance.append( left + ' ' + self._tokens[i] + ' ' + right )
                 lines -= 1
         else:
             print "No matches"
 
+        return concordance
+            
 class TokenSearcher(object):
     """
     A class that makes it easier to use regular expressions to search
@@ -327,7 +385,7 @@ class Text(object):
             self._concordance_index = ConcordanceIndex(self.tokens,
                                                        key=lambda s:s.lower())
 
-        self._concordance_index.print_concordance(word, width, lines)
+        return self._concordance_index.get_concordance_as_str(word, width, lines)
 
     def collocations(self, num=20, window_size=2):
         """
@@ -370,7 +428,8 @@ class Text(object):
         # code from nltk_contrib.readability
         raise NotImplementedError
 
-    def generate(self, length=100):
+    ### WARNING: A very bad Cassandra added context to this method
+    def generate(self, length=100, context=()):
         """
         Print random text, generated using a trigram language model.
 
@@ -382,8 +441,8 @@ class Text(object):
             print "Building ngram index..."
             estimator = lambda fdist, bins: LidstoneProbDist(fdist, 0.2)
             self._trigram_model = NgramModel(3, self, estimator=estimator)
-        text = self._trigram_model.generate(length)
-        print tokenwrap(text)
+        text = self._trigram_model.generate(length, context=context)
+        return tokenwrap(text)
 
     def similar(self, word, num=20):
         """
@@ -411,7 +470,7 @@ class Text(object):
             fd = FreqDist(w for w in wci.conditions() for c in wci[w]
                           if c in contexts and not w == word)
             words = fd.keys()[:num]
-            print tokenwrap(words)
+            return tokenwrap(words)
         else:
             print "No matches"
 

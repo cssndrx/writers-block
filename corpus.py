@@ -1,7 +1,10 @@
 import os
 import nltk
 import itertools
+
+from nltk_custom import CorpusText
 from config import CORPORA, CORPORA_FOLDER
+
 
 MAX_CORPORA = min(len(CORPORA), 3)
 
@@ -98,7 +101,7 @@ class Corpus(object):
         
     def load_corpus(self, corpus):
         tokens = self.corpus_to_tokens(corpus)
-        return nltk.Text(tokens)
+        return CorpusText(tokens)
 
     def corpus_to_tokens(self, corpus):
         ## this is sketchy.... fix this
