@@ -97,7 +97,6 @@ class Corpus(object):
         self.health = []
 
         ##build indices before the gui renders
-        print 'hit corpus init'
         self.text.concordance('blah')
         self.text.similar('blah')
         
@@ -128,7 +127,8 @@ class Corpus(object):
     def word_lookup(self, word):
         self.update_health(word)
         
-        rec = self.text.concordance(word)
+#        rec = self.text.concordance(word)
+        rec = str(self.text.get_adjacent_tokens(word))
 
 #        rec = format_by_unusual(rec)
         if rec:
@@ -140,10 +140,7 @@ class Corpus(object):
 
     def get_health(self):
         return 1 - self.health.count(None) / float(len(self.health) + 1)
-    
-    def __str__(self):
-        return self.corpus_name
-    
+        
     def related_words(self, word):
         return self.text.similar(word)
 
@@ -155,3 +152,5 @@ class Corpus(object):
         return self.text.generate(context=context)
 
 
+    def __str__(self):
+        return self.corpus_name

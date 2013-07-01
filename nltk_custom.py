@@ -14,17 +14,16 @@ regular expression search over tokenized strings, and
 distributional similarity.
 """
 
-from nltk.probability import FreqDist
+from nltk.probability import FreqDist, LidstoneProbDist
 from nltk.util import tokenwrap
+from nltk.model import NgramModel
 
 ##from math import log
 ##from collections import defaultdict
 ##import re
 ##
-##from nltk.probability import FreqDist, LidstoneProbDist
 ##from nltk.probability import ConditionalFreqDist as CFD
 ##from nltk.util import tokenwrap, LazyConcatenation
-##from nltk.model import NgramModel
 ##from nltk.metrics import f_measure, BigramAssocMeasures
 ##from nltk.collocations import BigramCollocationFinder
 
@@ -69,9 +68,81 @@ class CorpusText(nltk.Text):
         else:
             print "No matches"
 
+    def generate(self, length=100, context=()):
+        """
+        Return random text, generated using a trigram language model.
+
+        :param length: The length of text to generate (default=100)
+        :type length: int
+        :seealso: NgramModel
+        """
+        if '_trigram_model' not in self.__dict__:
+            print "Building ngram index..."
+            estimator = lambda fdist, bins: LidstoneProbDist(fdist, 0.2)
+            self._trigram_model = NgramModel(3, self, estimator=estimator)
+        text = self._trigram_model.generate(length, context=context)
+        return tokenwrap(text)
+
+
+    def get_adjacent_tokens(self, word, window=5, lines=25):
+        ### todo: should this go here??? look into fixing nltk.ContentIndex
+
+        result = []        
+
+        print 'check the case', self.tokens[:10]
+        indices = [ i for i, w in enumerate(self.tokens) if w.lower()==word]
+        if indices:
+            lines = min(lines, len(indices))
+            print "Displaying %s of %s matches:" % (lines, len(indices))
+
+            for i in indices:
+                if lines <= 0:
+                    break
+
+                ind_a = max(0, i-window)
+                ind_b = min(len(self.tokens), i+window)
+                
+                adjacent = self.tokens[ind_a:ind_b]
+                result.append(adjacent)
+                lines -= 1
+            return result
+
+        else:
+            print "No matches"
 
 class CorpusConcordanceIndex(nltk.ConcordanceIndex):
-
+            
+##    def print_concordance(self, word, width=75, lines=25):
+##        """
+##        Print a concordance for ``word`` with the specified context window.
+##
+##        :param word: The target word
+##        :type word: str
+##        :param width: The width of each line, in characters (default=80)
+##        :type width: int
+##        :param lines: The number of lines to display (default=25)
+##        :type lines: int
+##        """
+##        half_width = (width - len(word) - 2) / 2
+##        context = width/4 # approx number of words of context
+##
+##        offsets = self.offsets(word)
+##        if offsets:
+##            lines = min(lines, len(offsets))
+##            print "Displaying %s of %s matches:" % (lines, len(offsets))
+##            for i in offsets:
+##                if lines <= 0:
+##                    break
+##                left = (' ' * half_width +
+##                        ' '.join(self._tokens[i-context:i]))
+##                right = ' '.join(self._tokens[i+1:i+context])
+##                left = left[-half_width:]
+##                right = right[:half_width]
+##                print left, self._tokens[i], right
+##                lines -= 1
+##        else:
+##            print "No matches"
+            
     def get_concordance_as_str(self, word, width=75, lines=25):
         """
         Returns a string of the concordance.
