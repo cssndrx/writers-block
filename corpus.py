@@ -1,6 +1,7 @@
 import os
-import nltk
 import itertools
+import nltk
+from nltk.util import tokenwrap
 
 from nltk_custom import CorpusText
 from config import CORPORA, CORPORA_FOLDER
@@ -8,38 +9,46 @@ from config import CORPORA, CORPORA_FOLDER
 
 MAX_CORPORA = min(len(CORPORA), 3)
 
+ENGLISH_SET = set(w.lower() for w in nltk.corpus.words.words())
+ENGLISH_DIST = nltk.FreqDist(nltk.corpus.words.words()) ##HAHA THIS IS WRONG TO-DO
+
 def get_english_words(word_list):
-    text_vocab = set(w.lower() for w in word_list if w.isalpha())
-    english_vocab = set(w.lower() for w in nltk.corpus.words.words())
-    return list(text_vocab.intersection(english_vocab))
+    ## assumes that all words are lower case
+    ## incomplete check
+    if word_list: assert word_list[0] == word_list[0].lower()
+    
+    text_vocab = set(word_list)
+    return list(text_vocab.intersection(ENGLISH_SET))
 
 def sort_by_unusual(word_list):
+    word_list = [w.lower() for w in word_list]
+
     ## make sure that it is a word
     english_words = get_english_words(word_list)
-    print 'english_words', english_words
 
     ## pick the word that has the lowest freq distribution in the english language
-    fdist = nltk.FreqDist([w.lower() for w in nltk.corpus.words.words()])
-    return english_words.sort(key = lambda x: fdist[x])
+    print 'english_words', [(ENGLISH_DIST[x], x) for x in english_words]
+    english_words.sort(key = lambda x: ENGLISH_DIST[x])
+    return english_words
 
-def format_by_unusual(raw):
-    if not raw:
-        return raw
+def process_matrix(matrix):
+    formatted = ""
+    for row in matrix:
 
-    print 'raw', raw
-    tokens = nltk.wordpunct_tokenize(raw)
-    tokens = sort_by_unusual(tokens)
+        tokens = sort_by_unusual(row)
 
-    if not tokens:
-        return
-    
-    weirdest = tokens[0]
+        if not tokens:
+            return
+        
+        weirdest = tokens[0]
+        print 'weirdest', weirdest
+        ind = [x.lower() for x in row].index(weirdest)
 
-    ind = raw.find(weirdest)
-    formatted = raw[:ind] + '<b>' + weirdest + '</b>' + raw[ind:]
-    print 'weirdest', weirdest
+        row[ind] = '<b>' + row[ind] + '</b>'
+
+        formatted += tokenwrap(row) + '\n' ###todo: this string concat might be inefficient?
     return formatted
-    
+            
 
 class Library(object):
     corpora = []
@@ -71,11 +80,10 @@ class Library(object):
 
             func = getattr(corpus, corpus_func)
             corpus_rec = func(word)
-            print 'corpus_rec', corpus_rec
             if corpus_rec:
                 all_matches.append(corpus_rec)
         
-        return ''.join([x+'\n' for x in all_matches])
+        return ''.join(x+'\n' for x in all_matches)
 
 
     @classmethod
@@ -128,8 +136,11 @@ class Corpus(object):
         self.update_health(word)
         
 #        rec = self.text.concordance(word)
-        rec = str(self.text.get_adjacent_tokens(word))
+#        rec = str(self.text.get_adjacent_tokens(word))
 
+        neighbors = self.text.get_adjacent_tokens(word)
+        rec = process_matrix(neighbors)
+        
 #        rec = format_by_unusual(rec)
         if rec:
             self.last_rec = rec

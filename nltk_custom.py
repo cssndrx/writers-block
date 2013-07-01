@@ -86,10 +86,10 @@ class CorpusText(nltk.Text):
 
     def get_adjacent_tokens(self, word, window=5, lines=25):
         ### todo: should this go here??? look into fixing nltk.ContentIndex
+        assert word == word.lower()
 
         result = []        
 
-        print 'check the case', self.tokens[:10]
         indices = [ i for i, w in enumerate(self.tokens) if w.lower()==word]
         if indices:
             lines = min(lines, len(indices))
@@ -105,10 +105,10 @@ class CorpusText(nltk.Text):
                 adjacent = self.tokens[ind_a:ind_b]
                 result.append(adjacent)
                 lines -= 1
-            return result
-
         else:
             print "No matches"
+
+        return result
 
 class CorpusConcordanceIndex(nltk.ConcordanceIndex):
             
