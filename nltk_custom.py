@@ -14,6 +14,9 @@ regular expression search over tokenized strings, and
 distributional similarity.
 """
 
+from nltk.probability import FreqDist
+from nltk.util import tokenwrap
+
 ##from math import log
 ##from collections import defaultdict
 ##import re
@@ -42,6 +45,29 @@ class CorpusText(nltk.Text):
                                                        key=lambda s:s.lower())
 
         return self._concordance_index.get_concordance_as_str(word, width, lines)
+
+    def similar(self, word, num=20):
+        """
+        Returns as a string similar words
+        """
+        if '_word_context_index' not in self.__dict__:
+            print 'Building word-context index...'
+            self._word_context_index = nltk.ContextIndex(self.tokens,
+                                                    filter=lambda x:x.isalpha(),
+                                                    key=lambda s:s.lower())
+
+#        words = self._word_context_index.similar_words(word, num)
+
+        word = word.lower()
+        wci = self._word_context_index._word_to_contexts
+        if word in wci.conditions():
+            contexts = set(wci[word])
+            fd = FreqDist(w for w in wci.conditions() for c in wci[w]
+                          if c in contexts and not w == word)
+            words = fd.keys()[:num]
+            return tokenwrap(words)
+        else:
+            print "No matches"
 
 
 class CorpusConcordanceIndex(nltk.ConcordanceIndex):

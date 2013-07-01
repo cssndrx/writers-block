@@ -11,6 +11,10 @@ Python 2.7
 PyQt4
 nltk
 
+nltk's gutenberg and brown corpora, to get these corpora:
+>>> import nltk
+>>> nltk.download()
+
 =================
  TO RUN
 =================

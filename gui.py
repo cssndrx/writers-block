@@ -89,8 +89,8 @@ class MyWindow(QWidget):
         if corpus_output: self.output.setText(corpus_output)
 
 ## this is backwards looking.... so it doesn't work very well 
-##        related_words = Library.related_words(last_word)
-##        if related_words: self.words.setText(related_words)
+        related_words = Library.related_words(last_word)
+        if related_words: self.words.setText(related_words)
 
         self.render_health()
         

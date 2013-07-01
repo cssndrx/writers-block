@@ -66,16 +66,17 @@ class Library(object):
         
         return ''.join([x+'\n' for x in all_matches])
 
-##    ## todo: remove this code duplication with word_lookup
-##    @classmethod
-##    def related_words(cls, word):
-##        all_matches = []
-##        for corpus in cls.get_health()[:MAX_CORPORA]:
-##            corpus_rec = corpus.related_words(word)
-##            if corpus_rec:
-##                all_matches.append(corpus_rec)
-##        
-##        return ''.join([x+'\n' for x in all_matches])
+    ## todo: remove this code duplication with word_lookup
+    @classmethod
+    def related_words(cls, word):
+        all_matches = []
+        for corpus in cls.get_health()[:MAX_CORPORA]:
+            corpus_rec = corpus.related_words(word)
+            print 'corpus_rec', corpus_rec
+            if corpus_rec:
+                all_matches.append(corpus_rec)
+        
+        return ''.join([x+'\n' for x in all_matches])
 
     @classmethod
     def get_health(cls):
@@ -98,6 +99,7 @@ class Corpus(object):
         ##build indices before the gui renders
         print 'hit corpus init'
         self.text.concordance('blah')
+        self.text.similar('blah')
         
     def load_corpus(self, corpus):
         tokens = self.corpus_to_tokens(corpus)
@@ -127,9 +129,6 @@ class Corpus(object):
         self.update_health(word)
         
         rec = self.text.concordance(word)
-
-        ##should remove this
-#        rec = "".join(x+' ' for x in rec)
 
 #        rec = format_by_unusual(rec)
         if rec:
