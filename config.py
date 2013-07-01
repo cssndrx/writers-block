@@ -1,10 +1,13 @@
 import nltk
 
-CORPUSES = {'Teddy': 'teddy.txt',
+CORPORA = {'Teddy': 'teddy.txt',
+            'Engelbart': '1962paper.txt',
             'Emma': nltk.corpus.gutenberg.words('austen-emma.txt')}
+
+CORPORA_FOLDER = 'data'
 
 #### add all of brown
 ##for category in nltk.corpus.brown.categories():
 ##    corpus_name = category.capitalize()
 ##    corpus = nltk.corpus.brown.sents(categories=category)
-##    CORPUSES[corpus_name] = corpus
+##    CORPORA[corpus_name] = corpus

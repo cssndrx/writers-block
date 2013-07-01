@@ -4,7 +4,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import * 
 
 from corpus import Corpus, Library
-from config import CORPUSES
+from config import CORPORA
 
 #################################################################### 
 def main(): 
@@ -32,11 +32,11 @@ class MyWindow(QWidget):
         self.output.setAcceptRichText(True)
         self.output.setFont(font)
 
-        lbl3 = QLabel('Corpuses being used')
-        self.corpuses = QLineEdit()
-        self.corpuses.setReadOnly(True)
-        self.corpuses.setFont(font)
-        self.corpuses.setText(str(Library()))
+        lbl3 = QLabel('Corpora being used')
+        self.corpora = QLineEdit()
+        self.corpora.setReadOnly(True)
+        self.corpora.setFont(font)
+        self.corpora.setText(str(Library()))
 
         lbl4 = QLabel('Word suggestions')
         self.words = QLineEdit()
@@ -46,7 +46,7 @@ class MyWindow(QWidget):
         # track the health
         healthGrid = QGridLayout()
         self.healthLabel = []
-        for i, corpus_name in enumerate(CORPUSES.keys()):
+        for i, corpus_name in enumerate(CORPORA.keys()):
             self.healthLabel.append( (QLabel(corpus_name), QLabel('-')) )
             healthGrid.addWidget(self.healthLabel[i][0], i, 0)
             healthGrid.addWidget(self.healthLabel[i][1], i, 1)
