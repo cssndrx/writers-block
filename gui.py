@@ -86,8 +86,9 @@ class MyWindow(QWidget):
 
         print 'last_word', last_word
         corpus_output = Library.word_lookup(last_word)
-        if corpus_output: self.output.setText(corpus_output)
-
+#        if corpus_output: self.output.setText('<html>'+corpus_output+'</html>')
+        if corpus_output: self.output.setHtml(corpus_output)
+       
 ## this is backwards looking.... so it doesn't work very well 
         related_words = Library.related_words(last_word)
         if related_words: self.words.setText(related_words)
@@ -107,7 +108,6 @@ class MyWindow(QWidget):
             self.healthLabel[i][0].setText(c.corpus_name)
             self.healthLabel[i][1].setText('%.2f' % c.get_health())
         
-
 ####################################################################
 class MyTextEdit(QTextEdit):
     def __init__(self, *args):

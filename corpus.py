@@ -9,9 +9,8 @@ from config import CORPORA, CORPORA_FOLDER
 
 MAX_CORPORA = min(len(CORPORA), 3)
 
-##TO-DO: get a better english language dist
-from nltk.book import text6
-ENGLISH_DIST = nltk.FreqDist(text6)
+ENGLISH_DIST = nltk.FreqDist(nltk.corpus.brown.words(categories='news'))
+STOP_WORDS = nltk.corpus.stopwords.words('english')
 
 def get_dist_in_english(word_list):
     occurences = [(w, ENGLISH_DIST[w.lower()]) for w in word_list]
@@ -21,7 +20,11 @@ def is_rare_by_threshold(x, threshold=3):
     return ENGLISH_DIST[x] < threshold
 
 def is_stopword(x):
-    return x in nltk.corpus.stopwords.words('english')
+    return x in STOP_WORDS
+
+##def tokens_to_str(tokens):
+##    ## tokenwrap is causing &nbsp; to not correctly process
+##    return ''.join(t+' ' for t in tokens)
 
 def format_matrix(matrix):
     def invis(x):
@@ -44,7 +47,7 @@ def format_matrix(matrix):
             if word.isalpha() and is_rare_by_threshold(word):
                 row_tokens.append(bold(word))
             else:
-                row_tokens.append(invis(word))
+                row_tokens.append(identity(word))
 
         tokens.append(row_tokens)
     return tokens
@@ -54,6 +57,7 @@ def matrix_to_str(matrix):
     
     result = ''
     for row in formatted:
+#        result += tokens_to_str(row) + '\n'
         result += tokenwrap(row) + '\n'
     return result
 
