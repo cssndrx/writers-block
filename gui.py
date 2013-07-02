@@ -121,5 +121,17 @@ class MyTextEdit(QTextEdit):
         return QTextEdit.event(self, event)
 
 ####################################################################
+def dirty_exit():
+    ## http://stackoverflow.com/questions/4938723/what-is-the-correct-way-to-make-my-pyqt-application-quit-when-killed-from-the-co
+    ## to-do: try hooking this up
+    import signal
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+    import sys
+    from PyQt4.QtCore import QCoreApplication
+    app = QCoreApplication(sys.argv)
+    app.exec_()
+
+
 if __name__ == "__main__": 
     main()

@@ -86,7 +86,8 @@ class CorpusText(nltk.Text):
 
     def get_adjacent_tokens(self, word, window=5, lines=25):
         ### todo: should this go here??? look into fixing nltk.ContentIndex
-        assert word == word.lower()
+## to-do: figure out what to do about capitalization        
+##        assert word == word.lower()
 
         result = []        
 

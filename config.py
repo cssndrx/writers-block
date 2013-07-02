@@ -1,8 +1,9 @@
 import nltk
 
 CORPORA = {'Teddy': 'teddy.txt',
-            'Engelbart': '1962paper.txt',
-            'Emma': nltk.corpus.gutenberg.words('austen-emma.txt')}
+#            'Engelbart': '1962paper.txt',
+            'Emma': nltk.corpus.gutenberg.words('austen-emma.txt'),
+           'Romance': nltk.corpus.brown.sents(categories='romance')}
 
 CORPORA_FOLDER = 'data'
 

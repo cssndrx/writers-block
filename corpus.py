@@ -162,14 +162,9 @@ class Corpus(object):
     def word_lookup(self, word):
         self.update_health(word)
         
-#        rec = self.text.concordance(word)
-#        rec = str(self.text.get_adjacent_tokens(word))
-
         neighbors = self.text.get_adjacent_tokens(word)
-#        rec = word_matrix_by_unusual(neighbors)
         rec = matrix_to_str(neighbors)
         
-#        rec = format_by_unusual(rec)
         if rec:
             self.last_rec = rec
             self.health.append(word) ## +health for having it in the corpus
