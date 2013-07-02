@@ -2,6 +2,7 @@ import os
 import itertools
 import nltk
 from nltk.util import tokenwrap
+from nltk.corpus import wordnet as wn
 
 from nltk_custom import CorpusText
 from config import CORPORA, CORPORA_FOLDER
@@ -106,6 +107,21 @@ class Library(object):
     @classmethod
     def __str__(cls):
         return ''.join(str(corpus)+' ' for corpus in cls.corpora)
+
+    @staticmethod
+    def synonyms(word):
+        ## to-do: maybe this should not be in Library
+        results = []
+        for synset in wn.synsets(word):
+            results.extend(synset.lemma_names)
+
+        result_set = set(results)        
+
+        if word in result_set:
+            result_set.remove(word)
+
+        return tokenwrap(result_set)
+
     
 class Corpus(object):
 
@@ -173,7 +189,6 @@ class Corpus(object):
                     e.g ['Mighty', 'fine', 'day', 'we', 'have', 'here']
         """
         return self.text.generate(context=context)
-
 
     def __str__(self):
         return self.corpus_name

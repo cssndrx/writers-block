@@ -90,7 +90,8 @@ class MyWindow(QWidget):
         if corpus_output: self.output.setHtml(corpus_output)
        
 ## this is backwards looking.... so it doesn't work very well 
-        related_words = Library.related_words(last_word)
+#        related_words = Library.related_words(last_word)
+        related_words = Library.synonyms(last_word)
         if related_words: self.words.setText(related_words)
 
         self.render_health()
