@@ -25,7 +25,9 @@ def is_stopword(x):
 
 def format_matrix(matrix):
     def invis(x):
-        return ' '*len(x)
+        ## might want to approach whitespace alternatively
+        ## http://www.qtcentre.org/threads/27245-Printing-white-spaces-in-QPlainTextEdit-the-QtCreator-way
+        return '&nbsp;'*len(x)
 
     def bold(x):
         return '<b>' + x + '</b>'
@@ -42,7 +44,7 @@ def format_matrix(matrix):
             if word.isalpha() and is_rare_by_threshold(word):
                 row_tokens.append(bold(word))
             else:
-                row_tokens.append(identity(word))
+                row_tokens.append(invis(word))
 
         tokens.append(row_tokens)
     return tokens
