@@ -23,10 +23,6 @@ def is_rare_by_threshold(x, threshold=3):
 def is_stopword(x):
     return x in STOP_WORDS
 
-##def tokens_to_str(tokens):
-##    ## tokenwrap is causing &nbsp; to not correctly process
-##    return ''.join(t+' ' for t in tokens)
-
 def format_matrix(matrix):
     def invis(x):
         ## might want to approach whitespace alternatively
@@ -58,7 +54,6 @@ def matrix_to_str(matrix):
     
     result = ''
     for row in formatted:
-#        result += tokens_to_str(row) + '\n'
         result += tokenwrap(row) + '\n'
     return result
 
