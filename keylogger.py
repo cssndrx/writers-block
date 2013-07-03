@@ -10,7 +10,7 @@ import win32console
 from PyQt4.QtCore import * 
 from PyQt4.QtGui import *
 
-LOG_FILE = 'new_log.txt'
+LOG_FILE = 'new_log2.txt'
 
 ## Ascii that if seen, means that the buffer needs to be cleared
 ## e.g. backspace, delete
@@ -33,13 +33,12 @@ class WindowsKeyLogger(QObject):
         proc = pyHook.HookManager()      #open pyHook
         proc.KeyDown = self.pressed_chars     #set pressed_chars function on KeyDown event
         proc.HookKeyboard()              #start the function
-        pythoncom.PumpMessages()         #get input
+#        pythoncom.PumpMessages()         #get input
 
     def write_to_log(self, event, log_file=LOG_FILE):
         """
         Just for debugging purposes
         """
-        print 'wrote to log'
         with open(log_file, 'a') as f:
             if event.Ascii > 31 and event.Ascii < 127:
                 char = chr(event.Ascii)
@@ -59,11 +58,17 @@ class WindowsKeyLogger(QObject):
             self.write_to_log(event)
 
             if event.Ascii in DIRTY_ASCII:
+                print 'dirty ascii'
                 self.buffer = ''
-
-            elif event.Ascii == 32: ## space
+            elif event.Ascii > 32 and event.Ascii < 127: ##todo: clean this crap up
+                print 'regular ascii'
+                self.buffer += chr(event.Ascii)
+            elif event.Ascii == 32 or event.Ascii == 13: ## space or return
                 ## signal to the text editor that the word is ready
+                print 'signal emitted'
                 self.emit(SIGNAL('SPACE_PRESSED')) 
+            else:
+                print '--'+str(event.Ascii)+'--'
 
     def read_buffer(self):
         return self.buffer

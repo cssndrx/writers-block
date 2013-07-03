@@ -11,19 +11,11 @@ from config import CORPORA
 from keylogger import WindowsKeyLogger
 
 
-SNIFFER = None
-
 def main():
-    global SNIFFER
     app = QApplication(sys.argv) 
 
     w = MyWindow() 
     w.show()
-
-    ## NOTE: this has to happen last because pyhook doesn't relinquish control?
-    print 'trying to assign sniffer'
-    SNIFFER = WindowsKeyLogger()
-    print 'finished assigning sniffer....'
 
     sys.exit(app.exec_()) 
 
@@ -40,6 +32,8 @@ class MyWindow(QWidget):
 
         # create objects
         font = QFont('Courier', 12, QFont.Light)
+        self.sniffer = WindowsKeyLogger()
+
 
         ## todo: remove this code duplication
         lbl1 = QLabel("Write here")
@@ -106,6 +100,8 @@ class MyWindow(QWidget):
         print 'hooked up connection................'
         self.connect(self.input, SIGNAL('SPACE_PRESSED'),
                      self.update)
+        self.connect(self.sniffer, SIGNAL('SPACE_PRESSED'),
+                     self.update)
 
 
     def update(self):
@@ -136,9 +132,9 @@ class MyWindow(QWidget):
 ##
 ##        last_word = words[-1] if len(words) > 0 else None
 
-        last_word = SNIFFER.read_buffer()
+        last_word = self.sniffer.read_buffer()
         print 'last_word', last_word
-        SNIFFER.clear_buffer()
+        self.sniffer.clear_buffer()
 
         return last_word
 
