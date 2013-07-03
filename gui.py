@@ -7,11 +7,26 @@ from PyQt4.QtGui import *
 from corpus import Corpus, Library
 from config import CORPORA
 
-def main(): 
+### todo: check platform!!!!!!!!!!! 
+from keylogger import WindowsKeyLogger
+
+
+SNIFFER = None
+
+def main():
+    global SNIFFER
     app = QApplication(sys.argv) 
+
     w = MyWindow() 
-    w.show() 
+    w.show()
+
+    ## NOTE: this has to happen last because pyhook doesn't relinquish control?
+    print 'trying to assign sniffer'
+    SNIFFER = WindowsKeyLogger()
+    print 'finished assigning sniffer....'
+
     sys.exit(app.exec_()) 
+
 
 ##class CorpusWidget(object):
 ##    pass
@@ -76,6 +91,7 @@ class MyWindow(QWidget):
         health_layout = QVBoxLayout()
         health_layout.addWidget(lbl5)
         health_layout.addWidget(self.update_time)
+        health_layout.addStretch(1)
         health_layout.addWidget(lbl3)
         health_layout.addLayout(healthGrid)
         health_layout.addStretch(1)
@@ -87,10 +103,13 @@ class MyWindow(QWidget):
         self.setLayout(layout)
 
         # connections
+        print 'hooked up connection................'
         self.connect(self.input, SIGNAL('SPACE_PRESSED'),
                      self.update)
 
+
     def update(self):
+        print 'hit update...................'
         t1 = time.time()
 
         last_word = self.get_last_word()
@@ -111,11 +130,16 @@ class MyWindow(QWidget):
         self.update_time.setText('%0.3f ms' % time_taken)
         
     def get_last_word(self):
-        tokens = nltk.wordpunct_tokenize(self.input.toPlainText())
-        words = [str(t) for t in tokens if str(t).isalpha()]
-        print 'words', words
+##        tokens = nltk.wordpunct_tokenize(self.input.toPlainText())
+##        words = [str(t) for t in tokens if str(t).isalpha()]
+##        print 'words', words
+##
+##        last_word = words[-1] if len(words) > 0 else None
 
-        last_word = words[-1] if len(words) > 0 else None
+        last_word = SNIFFER.read_buffer()
+        print 'last_word', last_word
+        SNIFFER.clear_buffer()
+
         return last_word
 
     def render_health(self):        
