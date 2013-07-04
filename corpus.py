@@ -5,23 +5,8 @@ from nltk.util import tokenwrap
 from nltk.corpus import wordnet as wn
 
 from nltk_custom import CorpusText
-from config import CORPORA, CORPORA_FOLDER
-
-
-MAX_CORPORA = min(len(CORPORA), 3)
-
-ENGLISH_DIST = nltk.FreqDist(nltk.corpus.brown.words(categories='news'))
-STOP_WORDS = nltk.corpus.stopwords.words('english')
-
-def get_dist_in_english(word_list):
-    occurences = [(w, ENGLISH_DIST[w.lower()]) for w in word_list]
-    return dict(occurences)
-
-def is_rare_by_threshold(x, threshold=3):
-    return ENGLISH_DIST[x] < threshold
-
-def is_stopword(x):
-    return x in STOP_WORDS
+from utils import *
+from config import *
 
 def format_matrix(matrix):
     def invis(x):
@@ -57,6 +42,19 @@ def matrix_to_str(matrix):
         result += tokenwrap(row) + '\n'
     return result
 
+
+## this shoudl eat format_matrix
+## should eat matrix_to_str
+class Display(object):
+    ## get a matrix
+
+    ## apply filters
+
+    ## apply formatting
+
+    ## return string
+    pass
+        
 class Library(object):
     corpora = []
 
