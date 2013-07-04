@@ -127,6 +127,7 @@ class Corpus(object):
         ##build indices before the gui renders
         self.text.concordance('blah')
         self.text.similar('blah')
+        wn.synsets('blah')
         
     def load_corpus(self, corpus):
         tokens = self.corpus_to_tokens(corpus)
