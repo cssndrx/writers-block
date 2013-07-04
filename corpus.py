@@ -45,15 +45,54 @@ def matrix_to_str(matrix):
 
 ## this shoudl eat format_matrix
 ## should eat matrix_to_str
-class Display(object):
+class Result(object):
     ## get a matrix
-
+    def __init__(self, matrix):
+        self.matrix = matrix ## unformatted result matrix of the corpus
+        self.formatted = None ## formatted result matrix 
+        self.string_repr = None ## ??? not sure if this is the form we want or if we want some other obj to process these
+        
     ## apply filters
+    def apply_filter(self, word_filter_func):
+        ## do we want to do this at the sentence level?
+        pass
 
     ## apply formatting
+    def format_matrix(matrix, word_format_func):
+        def invis(x):
+            ## might want to approach whitespace alternatively
+            ## http://www.qtcentre.org/threads/27245-Printing-white-spaces-in-QPlainTextEdit-the-QtCreator-way
+            return '&nbsp;'*len(x)
+
+        def bold(x):
+            return '<b>' + x + '</b>'
+
+        def identity(x):
+            return x
+
+        tokens = []
+        for word_list in matrix:
+
+            row_tokens = []
+            dist = get_dist_in_english(word_list)
+            for word in word_list:
+                if word.isalpha() and is_rare_by_threshold(word):
+                    row_tokens.append(bold(word))
+                else:
+                    row_tokens.append(identity(word))
+
+            tokens.append(row_tokens)
+        return tokens
 
     ## return string
-    pass
+    def matrix_to_str(matrix):
+        formatted = format_matrix(matrix)
+        
+        result = ''
+        for row in formatted:
+            result += tokenwrap(row) + '\n'
+        return result
+
         
 class Library(object):
     corpora = []
@@ -99,7 +138,8 @@ class Library(object):
 
     @classmethod
     def __str__(cls):
-        return ''.join(str(corpus)+' ' for corpus in cls.corpora)
+#        return ''.join(str(corpus)+' ' for corpus in cls.corpora)
+        return tokenwrap(str(c) for c in cls.corpora)
 
     @staticmethod
     def synonyms(word):

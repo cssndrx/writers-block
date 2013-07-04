@@ -39,7 +39,7 @@ class CorpusText(nltk.Text):
         (nltk default is to print concordance)
         """
         if '_concordance_index' not in self.__dict__:
-            print "Building index..."
+            print "Building concordance index..."
             self._concordance_index = CorpusConcordanceIndex(self.tokens,
                                                        key=lambda s:s.lower())
 

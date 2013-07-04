@@ -6,7 +6,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import * 
 
 from corpus import Corpus, Library
-from config import CORPORA, UNIVERSAL_SUGGESTIONS
+from config import CORPORA, IS_KEYLOGGER
 
 
 def main():
@@ -16,8 +16,8 @@ def main():
 
     sys.exit(app.exec_()) 
 
-def is_running_universal():
-    return os.name == 'nt' and UNIVERSAL_SUGGESTIONS
+def is_keylogger():
+    return os.name == 'nt' and IS_KEYLOGGER
     
     
 class MyWindow(QWidget): 
@@ -88,12 +88,11 @@ class MyWindow(QWidget):
 
         self.setLayout(layout)
 
-        # connections
-        print 'hooked up connection................'
+        # connections to register signals
         self.connect(self.input, SIGNAL('SPACE_PRESSED'),
                      self.update)
 
-        if is_running_universal(): 
+        if is_keylogger(): 
             from keylogger import WindowsKeyLogger
             self.sniffer = WindowsKeyLogger()
             self.connect(self.sniffer, SIGNAL('SPACE_PRESSED'),
@@ -120,7 +119,7 @@ class MyWindow(QWidget):
         self.update_time.setText('%0.3f ms' % time_taken)
         
     def get_last_word(self):
-        if is_running_universal():
+        if is_keylogger():
             last_word = self.sniffer.read_buffer()
             self.sniffer.clear_buffer()
         else:            
