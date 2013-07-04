@@ -1,3 +1,4 @@
+import os
 import sys
 import time
 import nltk
@@ -5,10 +6,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import * 
 
 from corpus import Corpus, Library
-from config import CORPORA
-
-### todo: check platform!!!!!!!!!!! 
-from keylogger import WindowsKeyLogger
+from config import CORPORA, UNIVERSAL_SUGGESTIONS
 
 
 def main():
@@ -23,17 +21,18 @@ def main():
 ##class CorpusWidget(object):
 ##    pass
 ##    ## health
-##    ## qwidget
-    
+##    ## qwidgetMyWindow
 
+def is_running_universal():
+    return os.name == 'nt' and UNIVERSAL_SUGGESTIONS
+    
+    
 class MyWindow(QWidget): 
     def __init__(self, *args): 
         QWidget.__init__(self, *args)
 
         # create objects
         font = QFont('Courier', 12, QFont.Light)
-        self.sniffer = WindowsKeyLogger()
-
 
         ## todo: remove this code duplication
         lbl1 = QLabel("Write here")
@@ -100,8 +99,12 @@ class MyWindow(QWidget):
         print 'hooked up connection................'
         self.connect(self.input, SIGNAL('SPACE_PRESSED'),
                      self.update)
-        self.connect(self.sniffer, SIGNAL('SPACE_PRESSED'),
-                     self.update)
+
+        if is_running_universal(): 
+            from keylogger import WindowsKeyLogger
+            self.sniffer = WindowsKeyLogger()
+            self.connect(self.sniffer, SIGNAL('SPACE_PRESSED'),
+                         self.update)
 
 
     def update(self):
@@ -126,16 +129,15 @@ class MyWindow(QWidget):
         self.update_time.setText('%0.3f ms' % time_taken)
         
     def get_last_word(self):
-##        tokens = nltk.wordpunct_tokenize(self.input.toPlainText())
-##        words = [str(t) for t in tokens if str(t).isalpha()]
-##        print 'words', words
-##
-##        last_word = words[-1] if len(words) > 0 else None
+        if is_running_universal():
+            last_word = self.sniffer.read_buffer()
+            self.sniffer.clear_buffer()
+        else:            
+            tokens = nltk.wordpunct_tokenize(self.input.toPlainText())
+            words = [str(t) for t in tokens if str(t).isalpha()]
+            last_word = words[-1] if len(words) > 0 else None
 
-        last_word = self.sniffer.read_buffer()
         print 'last_word', last_word
-        self.sniffer.clear_buffer()
-
         return last_word
 
     def render_health(self):        

@@ -3,7 +3,6 @@
 ### TODO: may want to check out cross-platform loggers
 ### http://stackoverflow.com/questions/365110/cross-platform-keylogger
 import pyHook
-import pythoncom
 import win32gui
 import win32console
 
@@ -27,26 +26,29 @@ class WindowsKeyLogger(QObject):
         ## Holds the best guess of user's last word
         self.buffer = ''
 
-        window = win32console.GetConsoleWindow()  #go to script window
-        win32gui.ShowWindow(window,0)             #hide window
+        ## create hidden window
+        window = win32console.GetConsoleWindow()  
+        win32gui.ShowWindow(window,0)             
 
-        proc = pyHook.HookManager()      #open pyHook
-        proc.KeyDown = self.pressed_chars     #set pressed_chars function on KeyDown event
-        proc.HookKeyboard()              #start the function
-#        pythoncom.PumpMessages()         #get input
+        ## http://sourceforge.net/apps/mediawiki/pyhook/index.php?title=PyHook_Tutorial
+        proc = pyHook.HookManager()
 
-    def write_to_log(self, event, log_file=LOG_FILE):
-        """
-        Just for debugging purposes
-        """
-        with open(log_file, 'a') as f:
-            if event.Ascii > 31 and event.Ascii < 127:
-                char = chr(event.Ascii)
-                f.write(char)
-            elif event.Ascii == 13:   ## return
-                f.write('\n')       
-            else:
-                f.write('--'+str(event.Ascii)+'--')
+        ## register callback to hookmanager
+        proc.KeyDown = self.pressed_chars     
+        proc.HookKeyboard()              
+
+##    def write_to_log(self, event, log_file=LOG_FILE):
+##        """
+##        Just for debugging purposes
+##        """
+##        with open(log_file, 'a') as f:
+##            if event.Ascii > 31 and event.Ascii < 127:
+##                char = chr(event.Ascii)
+##                f.write(char)
+##            elif event.Ascii == 13:   ## return
+##                f.write('\n')       
+##            else:
+##                f.write('--'+str(event.Ascii)+'--')
 
     def pressed_chars(self, event):
         """
@@ -55,7 +57,7 @@ class WindowsKeyLogger(QObject):
         ## http://www.asciitable.com/
         print 'hit pressed chars'
         if event.Ascii:
-            self.write_to_log(event)
+#            self.write_to_log(event)
 
             if event.Ascii in DIRTY_ASCII:
                 print 'dirty ascii'
@@ -76,6 +78,5 @@ class WindowsKeyLogger(QObject):
     def clear_buffer(self):
         self.buffer = ''
 
-### todo: do we need a way of exiting the keylogger?
 if __name__ == '__main__':
     WindowsKeyLogger()

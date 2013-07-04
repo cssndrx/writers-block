@@ -7,13 +7,17 @@ xiac@mit.edu
 =================
  REQUIREMENTS 
 =================
-Python 2.7
-PyQt4
-nltk
-
-nltk's gutenberg and brown corpora, to get these corpora:
+- Python 2.7
+- PyQt4
+- nltk
+- nltk's gutenberg and brown corpora, to get these corpora:
 >>> import nltk
 >>> nltk.download()
+
+If you are running Windows and wish to generate suggestions even when not using the editor, 
+additional packages for hooking into global keyboard events are required:
+- pywin32
+- pyHook
 
 =================
  TO RUN
