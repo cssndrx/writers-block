@@ -101,24 +101,22 @@ class MyWindow(QWidget):
         self.setLayout(layout)
 
         # connections to register signals
-        self.connect(self.input, SIGNAL('SPACE_PRESSED'),
-                     self.update)
-
         if is_keylogger(): 
             from keylogger import WindowsKeyLogger
             self.sniffer = WindowsKeyLogger()
             self.connect(self.sniffer, SIGNAL('SPACE_PRESSED'),
                          self.update)
-
+        else:
+            self.connect(self.input, SIGNAL('SPACE_PRESSED'),
+                         self.update)
 
     def update(self):
         t1 = time.time()
 
         last_word = self.get_last_word()
-        self.last_word.setText(last_word)
-
         if not last_word: return
 
+        self.last_word.setText(last_word)
         corpus_output = CEO.word_lookup(last_word)
         if corpus_output: self.output.setHtml(corpus_output)
        
@@ -134,9 +132,11 @@ class MyWindow(QWidget):
         
     def get_last_word(self):
         if is_keylogger():
+            print 'is keylogger get_last_word'
             last_word = self.sniffer.read_buffer()
             self.sniffer.clear_buffer()
-        else:            
+        else:
+            print 'not keylogger get_last_word'
             tokens = nltk.wordpunct_tokenize(self.input.toPlainText())
             words = [str(t) for t in tokens if str(t).isalpha()]
             last_word = words[-1] if len(words) > 0 else None

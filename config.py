@@ -1,7 +1,7 @@
 import nltk
 
 # Whether or not to give suggestions if the user is not typing into the editor
-IS_KEYLOGGER = False
+IS_KEYLOGGER = True
 
 ## the folder in which non-nltk text-based corpora should be stored
 CORPORA_FOLDER = 'data'

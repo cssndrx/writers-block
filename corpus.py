@@ -1,5 +1,4 @@
 import os
-import itertools
 import nltk
 from nltk.util import tokenwrap
 from nltk.corpus import wordnet as wn
@@ -7,30 +6,6 @@ from nltk.corpus import wordnet as wn
 from nltk_custom import CorpusText
 from utils import *
 from config import *
-
-
-def smush(matrix):
-    return list(itertools.chain.from_iterable(matrix))
-    
-
-#####################################################
-#### TODO: put these format funcs somewhere better
-def invis(x):
-    ## might want to approach whitespace alternatively
-    ## http://www.qtcentre.org/threads/27245-Printing-white-spaces-in-QPlainTextEdit-the-QtCreator-way
-    return '&nbsp;'*len(x)
-
-def bold(x):
-    return '<b>' + x + '</b>'
-
-def identity(x):
-    return x
-
-def default_word_format_func(word):
-    if word.isalpha() and is_rare_by_threshold(word):
-        return bold(word)
-    return identity(word)
-#####################################################
 
 
 class CEO(object):
@@ -76,7 +51,7 @@ class Manager(object):
         formatted = Manager.format_matrix(matrix, default_word_format_func)
         
         ## return a string result
-        return Manager.matrix_to_str(matrix)
+        return Manager.matrix_to_str(formatted)
 
     @staticmethod
     def filter_results(results, num_rows):
@@ -118,7 +93,6 @@ class Manager(object):
         Creates string repr of the formatted matrix if it DNE
         Returns string repr in all cases
         """
-
         ##TODO: this might be slow because strings are immutable
         result = ''
         for row in matrix:
@@ -170,7 +144,6 @@ class Corpus(object):
         result = Result(neighbors)
         self.cache[word] = result
 
-        print 'len(result', len(result)
         return result
 
     def get_health(self):
@@ -194,9 +167,9 @@ class Result(object):
     def __init__(self, matrix):
         self.matrix = matrix if matrix else []
 
-        ## some Nice manager may want to assign these to a Result obj
-        self.formatted = [] ## matrix in which tokens have formatting on them e.g. '<b>poppy</b>'
-        self.string_repr = '' ## string repr of the formatted matrix
+##        ## some Nice manager may want to assign these to a Result obj
+##        self.formatted = [] ## matrix in which tokens have formatting on them e.g. '<b>poppy</b>'
+##        self.string_repr = '' ## string repr of the formatted matrix
 
     def get_scores(self):
         """
@@ -209,40 +182,11 @@ class Result(object):
         return len(self.matrix)
     
 ##class Library(object):
-##    corpora = []
-##
-##    def __new__(cls, *args, **kwargs):
-##        if not cls.corpora:
-##            cls.load_corpora()
-##        return super(Library, cls).__new__(cls, *args, **kwargs)
-##
-##    @classmethod
-##    def load_corpora(cls):
-##        print 'Loading corpora.....'
-##        for corpus_name, corpus in CORPORA.iteritems():
-##            print 'Loading.....', corpus_name
-##            cls.corpora.append(Corpus(corpus_name, corpus))
-##    
-##    @classmethod
-##    def word_lookup(cls, word):
-##        return cls.hit_corpora('word_lookup', word)
 ##    
 ##    @classmethod
 ##    def related_words(cls, word):
 ##        return cls.hit_corpora('related_words', word)
 ##
-##    @classmethod
-##    def hit_corpora(cls, corpus_func, word):
-##        all_matches = []
-##        for corpus in cls.get_health()[:MAX_CORPORA]:
-##
-##            func = getattr(corpus, corpus_func)
-##            result = func(word)
-##
-####            if corpus_rec:
-####                all_matches.append(corpus_rec)
-##        
-##        return ''.join(x+'\n' for x in all_matches)
 ##
 ##
 ##    @classmethod
