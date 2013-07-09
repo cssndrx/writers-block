@@ -30,7 +30,7 @@ class CEO(object):
         results = [corpus.word_lookup(word) for corpus in cls.corpora]
 
         ## pass the results to the manager(s)
-        manager = Manager(10)
+        manager = Manager(5)
         return manager.process_results(results)
 
     @classmethod
@@ -96,7 +96,7 @@ class Manager(object):
         ##TODO: this might be slow because strings are immutable
         result = ''
         for row in matrix:
-            result += tokenwrap(row) + '\n'
+            result += tokenwrap(row) + '<br>'
 
         return result
            

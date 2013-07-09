@@ -8,6 +8,8 @@ from PyQt4.QtGui import *
 from corpus import CEO
 from config import CORPORA, IS_KEYLOGGER
 
+## todo: figure out where this should go
+font = QFont('Courier', 12, QFont.Light)
 
 def main():
     app = QApplication(sys.argv) 
@@ -19,88 +21,108 @@ def main():
 def is_keylogger():
     return os.name == 'nt' and IS_KEYLOGGER
     
-    
+
+def input_box():
+    """
+    Returns an input box that raises a QT SIGNAL
+    in response to the space bar
+    """
+    inp = SpacebarTextEdit()
+    inp.setFont(font)
+    return inp
+
+def lbl(init_text='-'):
+    return QLabel(init_text)
+
+def output_box():
+    out = QTextEdit()
+    out.setReadOnly(True)
+    out.setAcceptRichText(True)
+    out.setFont(font)
+    return out
+
+def output_line():
+    out = QLineEdit()
+    out.setReadOnly(True)
+    out.setFont(font)
+    return out
+
+def output_word():
+    return lbl()
+
+def output_grid():
+    pass
+
+def vstack_widgets(widgets, with_stretch=False):
+    """
+    Returns a layout that vertically stacks the given widgets
+    """
+    layout = QVBoxLayout()
+    for i, w in enumerate(widgets):
+        layout.addWidget(w)
+
+        if with_stretch and i%2==1:
+            ## assumes that widgets are paired when adding stretches
+            layout.addStretch(1)
+
+    return layout
+
+        
 class MyWindow(QWidget): 
+
     def __init__(self, *args):
-        ## load the CEO
-        ceo = CEO()
         
         QWidget.__init__(self, *args)
 
-        # create objects
-        font = QFont('Courier', 12, QFont.Light)
-
-        ## todo: remove this code duplication
-        lbl1 = QLabel("Write here")
-        self.input = MyTextEdit()
-        self.input.setFont(font)
-
-        lbl2 = QLabel("Suggestions")
-        self.output = QTextEdit()
-        self.output.setReadOnly(True)
-        self.output.setAcceptRichText(True)
-        self.output.setFont(font)
-
-        lbl3 = QLabel('Corpora being used')
-        self.corpora = QLineEdit()
-        self.corpora.setReadOnly(True)
-        self.corpora.setFont(font)
-        self.corpora.setText(CEO.get_corpora_names())
-
-        lbl4 = QLabel('Word suggestions')
-        self.words = QLineEdit()
-        self.words.setReadOnly(True)
-        self.words.setFont(font)
-
-        lbl5 = QLabel('Update time')
-        self.update_time = QLabel('-')
-
-        lbl6 = QLabel('Last word')
-        self.last_word = QLabel('-')
-
-        # track the health
-        healthGrid = QGridLayout()
-        self.healthLabel = []
-        for i, corpus_name in enumerate(CORPORA.keys()):
-            self.healthLabel.append( (QLabel(corpus_name), QLabel('-')) )
-            healthGrid.addWidget(self.healthLabel[i][0], i, 0)
-            healthGrid.addWidget(self.healthLabel[i][1], i, 1)
+        ## attributes
+        self.input = input_box()
+        self.output = output_box()
+        self.words = output_line()
+        self.update_time = output_word()
+        self.last_word = output_word()
+        self.corpora_health = output_grid()
 
 
-        # window parameters
+        ## load the CEO for interacting with corpora
+        ceo = CEO()
+
+        # create window
         self.setGeometry(40, 40, 1000, 800)
+        self.build_window()
 
-        # layout
-        text_layout = QVBoxLayout()
-        text_layout.addWidget(lbl1)
-        text_layout.addWidget(self.input)
-        text_layout.addWidget(lbl2)
-        text_layout.addWidget(self.output)
-        text_layout.addWidget(lbl4)
-        text_layout.addWidget(self.words)
-
-
-        health_layout = QVBoxLayout()
-        health_layout.addWidget(lbl5)
-        health_layout.addWidget(self.update_time)
-        health_layout.addStretch(1)
-
-        health_layout.addWidget(lbl6)
-        health_layout.addWidget(self.last_word)
-        health_layout.addStretch(1)
-
+        ## make connections to register signals
+        self.register_events()
         
-        health_layout.addWidget(lbl3)
-        health_layout.addLayout(healthGrid)
-        health_layout.addStretch(1)
+    def build_window(self):
+        # build sublayouts
+        wide_widgets = [lbl('Write here'),
+                        self.input,
+                        lbl('Suggestions'),
+                        self.output,
+                        lbl('Word suggestions'),
+                        self.words,
+                        ]
+        self.wide_layout = vstack_widgets(wide_widgets)
 
+        narrow_widgets = [lbl('Update time'),
+                          self.update_time,
+                          lbl('Last_word'),
+                          self.last_word,
+                          lbl('Corpora being used'),
+                          self.corpora_health,
+                          ]
+        self.narrow_layout = vstack_widgets(narrow_widgets, with_stretch=True)
+
+        ## build main layout
         layout = QHBoxLayout()
-        layout.addLayout(text_layout)
-        layout.addLayout(health_layout)
-
+        layout.addLayout(self.wide_layout)
+        layout.addLayout(self.narrow_layout)
         self.setLayout(layout)
-
-        # connections to register signals
+        
+    def register_events(self):
+        """
+        Registers QT signal so that 'update' function is called after the user enters a word
+        """
         if is_keylogger(): 
             from keylogger import WindowsKeyLogger
             self.sniffer = WindowsKeyLogger()
@@ -109,47 +131,45 @@ class MyWindow(QWidget):
         else:
             self.connect(self.input, SIGNAL('SPACE_PRESSED'),
                          self.update)
-
+        
     def update(self):
+        """
+        Called after user finishes typing a word
+        """
         t1 = time.time()
 
         last_word = self.get_last_word()
         if not last_word: return
-
         self.last_word.setText(last_word)
+
         corpus_output = CEO.word_lookup(last_word)
         if corpus_output: self.output.setHtml(corpus_output)
        
-#### this is backwards looking.... so it doesn't work very well 
-###        related_words = Library.related_words(last_word)
-##        related_words = Library.synonyms(last_word)
-##        if related_words: self.words.setText(related_words)
-
-##        self.render_health()
         t2 = time.time()
         time_taken = (t2-t1)*1000.0
         self.update_time.setText('%0.3f ms' % time_taken)
-        
+
+            
     def get_last_word(self):
+        """
+        Identifies the last word from either the Windows keylogger or the GUI element
+        """
         if is_keylogger():
-            print 'is keylogger get_last_word'
             last_word = self.sniffer.read_buffer()
             self.sniffer.clear_buffer()
         else:
-            print 'not keylogger get_last_word'
             tokens = nltk.wordpunct_tokenize(self.input.toPlainText())
             words = [str(t) for t in tokens if str(t).isalpha()]
             last_word = words[-1] if len(words) > 0 else None
 
         return last_word
-
-##    def render_health(self):        
-##        for i, c in enumerate(Library.get_health()):
-##            self.healthLabel[i][0].setText(c.corpus_name)
-##            self.healthLabel[i][1].setText('%.2f' % c.get_health())
         
 
-class MyTextEdit(QTextEdit):
+class SpacebarTextEdit(QTextEdit):
+    """
+    An input box that raises a QT SIGNAL
+    in response to the space bar
+    """
     def __init__(self, *args):
         QTextEdit.__init__(self, *args)
         
@@ -159,17 +179,36 @@ class MyTextEdit(QTextEdit):
 
         return QTextEdit.event(self, event)
 
-##def dirty_exit():
-##    ## http://stackoverflow.com/questions/4938723/what-is-the-correct-way-to-make-my-pyqt-application-quit-when-killed-from-the-co
-##    ## to-do: try hooking this up
-##    import signal
-##    signal.signal(signal.SIGINT, signal.SIG_DFL)
-##
-##    import sys
-##    from PyQt4.QtCore import QCoreApplication
-##    app = QCoreApplication(sys.argv)
-##    app.exec_()
-
 
 if __name__ == "__main__": 
     main()
+
+######## RELATED WORDS STUFF #########
+#### this is backwards looking.... so it doesn't work very well 
+###        related_words = Library.related_words(last_word)
+##        related_words = Library.synonyms(last_word)
+##        if related_words: self.words.setText(related_words)
+
+
+######## CHUCK WIDGET STUFF #########
+##        if not hasattr(self, 'test_widget'):
+##            self.test_widget = QLabel('BOOM')
+##            self.narrow_layout.addWidget(self.test_widget)
+##        else:
+##            self.test_widget.hide()
+
+###### HEALTH STUFF #########
+##        # track the health
+##        healthGrid = QGridLayout()
+##
+##        self.healthLabel = []
+##        for i, corpus_name in enumerate(CORPORA.keys()):
+##            self.healthLabel.append( (QLabel(corpus_name), QLabel('-')) )
+##            healthGrid.addWidget(self.healthLabel[i][0], i, 0)
+##            healthGrid.addWidget(self.healthLabel[i][1], i, 1)
+
+
+##    def render_health(self):        
+##        for i, c in enumerate(Library.get_health()):
+##            self.healthLabel[i][0].setText(c.corpus_name)
+##            self.healthLabel[i][1].setText('%.2f' % c.get_health())
