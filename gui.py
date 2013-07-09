@@ -5,7 +5,7 @@ import nltk
 from PyQt4.QtCore import * 
 from PyQt4.QtGui import * 
 
-from corpus import Corpus, Library
+from corpus import CEO
 from config import CORPORA, IS_KEYLOGGER
 
 
@@ -21,7 +21,10 @@ def is_keylogger():
     
     
 class MyWindow(QWidget): 
-    def __init__(self, *args): 
+    def __init__(self, *args):
+        ## load the CEO
+        ceo = CEO()
+        
         QWidget.__init__(self, *args)
 
         # create objects
@@ -42,7 +45,7 @@ class MyWindow(QWidget):
         self.corpora = QLineEdit()
         self.corpora.setReadOnly(True)
         self.corpora.setFont(font)
-        self.corpora.setText(str(Library()))
+        self.corpora.setText(CEO.get_corpora_names())
 
         lbl4 = QLabel('Word suggestions')
         self.words = QLineEdit()
@@ -51,6 +54,9 @@ class MyWindow(QWidget):
 
         lbl5 = QLabel('Update time')
         self.update_time = QLabel('-')
+
+        lbl6 = QLabel('Last word')
+        self.last_word = QLabel('-')
 
         # track the health
         healthGrid = QGridLayout()
@@ -78,6 +84,12 @@ class MyWindow(QWidget):
         health_layout.addWidget(lbl5)
         health_layout.addWidget(self.update_time)
         health_layout.addStretch(1)
+
+        health_layout.addWidget(lbl6)
+        health_layout.addWidget(self.last_word)
+        health_layout.addStretch(1)
+
+        
         health_layout.addWidget(lbl3)
         health_layout.addLayout(healthGrid)
         health_layout.addStretch(1)
@@ -103,17 +115,19 @@ class MyWindow(QWidget):
         t1 = time.time()
 
         last_word = self.get_last_word()
+        self.last_word.setText(last_word)
+
         if not last_word: return
 
-        corpus_output = Library.word_lookup(last_word)
+        corpus_output = CEO.word_lookup(last_word)
         if corpus_output: self.output.setHtml(corpus_output)
        
-## this is backwards looking.... so it doesn't work very well 
-#        related_words = Library.related_words(last_word)
-        related_words = Library.synonyms(last_word)
-        if related_words: self.words.setText(related_words)
+#### this is backwards looking.... so it doesn't work very well 
+###        related_words = Library.related_words(last_word)
+##        related_words = Library.synonyms(last_word)
+##        if related_words: self.words.setText(related_words)
 
-        self.render_health()
+##        self.render_health()
         t2 = time.time()
         time_taken = (t2-t1)*1000.0
         self.update_time.setText('%0.3f ms' % time_taken)
@@ -127,13 +141,12 @@ class MyWindow(QWidget):
             words = [str(t) for t in tokens if str(t).isalpha()]
             last_word = words[-1] if len(words) > 0 else None
 
-        print 'last_word', last_word
         return last_word
 
-    def render_health(self):        
-        for i, c in enumerate(Library.get_health()):
-            self.healthLabel[i][0].setText(c.corpus_name)
-            self.healthLabel[i][1].setText('%.2f' % c.get_health())
+##    def render_health(self):        
+##        for i, c in enumerate(Library.get_health()):
+##            self.healthLabel[i][0].setText(c.corpus_name)
+##            self.healthLabel[i][1].setText('%.2f' % c.get_health())
         
 
 class MyTextEdit(QTextEdit):

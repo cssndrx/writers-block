@@ -1,12 +1,13 @@
 import nltk
 
 # Whether or not to give suggestions if the user is not typing into the editor
-IS_KEYLOGGER = True
+IS_KEYLOGGER = False
 
 ## the folder in which non-nltk text-based corpora should be stored
 CORPORA_FOLDER = 'data'
 
-CORPORA = {'Teddy': 'teddy.txt',
+CORPORA = {#'Teddy': 'teddy.txt',
+            'Salinger': 'nine_stories.txt',
 #            'Engelbart': '1962paper.txt',
             'Emma': nltk.corpus.gutenberg.words('austen-emma.txt'),
 #           'Romance': nltk.corpus.brown.sents(categories='romance')
