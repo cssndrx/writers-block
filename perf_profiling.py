@@ -15,4 +15,4 @@ p = pstats.Stats(PROFILE_LOG)
 p.sort_stats('tottime').print_stats(NUM_LINES)
 
 
-## to-do: figure out which of the widgets is slowest
+## todo: figure out which of the widgets is slowest

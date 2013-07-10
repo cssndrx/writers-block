@@ -7,36 +7,86 @@ from nltk_custom import CorpusText
 from utils import *
 from config import *
 
+MAX_ROWS_DISPLAYED = 15
 
 class CEO(object):
-    corpora = []
+    corpora = [] 
+    corpora_health = []
+    last_word = ''
 
     def __new__(cls, *args, **kwargs):
+        """
+        Uses class variable so that corpora are only read in once
+        """
         if not cls.corpora:
             cls.load_corpora()
+            cls.corpora_health = [0]*len(cls.corpora)
         return super(CEO, cls).__new__(cls, *args, **kwargs)
 
     @classmethod
     def load_corpora(cls):
+        """
+        One-time load of the corpora specified in the config file.
+        """
         print 'Loading corpora.....'
         for corpus_name, corpus in CORPORA.iteritems():
             print 'Loading.....', corpus_name
             cls.corpora.append(Corpus(corpus_name, corpus))
 
     @classmethod
+    def get_corpora_names(cls):
+        return [c.corpus_name for c in cls.corpora]
+
+    @classmethod
+    def get_corpora_health(cls):
+        """
+        Return a list of (health, corpus_name) tuples sorted with highest health first
+        """
+        zipped = zip(cls.get_corpora_names(), cls.corpora_health)
+        zipped.sort(reverse=True, key=lambda x:x[1])
+        return zipped
+
+    @classmethod
     def word_lookup(cls, word):
+        """
+        Gives word to corpora. Each corpus generates a result matrix.
+        Gives result matrices to manager.... which generates a string
+        """
         ## hit the corpora
         ## get token matrix from each corpus
         results = [corpus.word_lookup(word) for corpus in cls.corpora]
 
-        ## pass the results to the manager(s)
-        manager = Manager(5)
-        return manager.process_results(results)
+        ## pass the results to the manager
+        ## todo: create more managers
+        manager = Manager(MAX_ROWS_DISPLAYED)
+        string_repr = manager.process_results(results)
+
+        ## update the last_word that was looked up
+        cls.last_word = word
+        return string_repr
 
     @classmethod
-    def get_corpora_names(cls):
-        return tokenwrap(str(c) for c in cls.corpora)
-  
+    def update_corpora_health(cls, word):
+        """
+        Given the user's new word, queries against each corpus' last returned matrix
+        to see if it had offered the suggestion.
+
+        Increments cls.corpora_health with the number of occurences
+        """
+        ## todo: can we generate a meaningful percentage?
+        if not cls.last_word:
+            return
+
+        def count_occurences(word, matrix):
+            return sum(row.count(word) for row in matrix)
+    
+        results = [corpus.word_lookup(cls.last_word) for corpus in cls.corpora]
+        counts = [count_occurences(word, r.matrix) for r in results]
+
+        ## todo: this is weighted towards large corpora. we should scale this by runtime of the corpora.
+        for i, count in enumerate(counts):
+            cls.corpora_health[i] += count
+
 class Manager(object):
 
     def __init__(self, num_rows):
@@ -111,7 +161,8 @@ class Corpus(object):
         ## todo: this will cause memory to grow as the program runs!!! should probably kick some things out
         self.cache = {} 
 
-        ##build indices before the gui renders
+        ## build indices before the gui renders
+        ## (without this, you will notice a large lag after the user enters the first word)
         self.text.concordance('blah')
         self.text.similar('blah')
         wn.synsets('blah')
@@ -130,7 +181,7 @@ class Corpus(object):
         elif isinstance(corpus, nltk.corpus.reader.util.StreamBackedCorpusView):
             tokens = corpus
         else:
-            raise NotImplemented
+            raise NotImplementedError('Unkown corpus received of type %s' % type(corpus))
         return tokens
     
     def word_lookup(self, word):
@@ -201,7 +252,7 @@ class Result(object):
 ##
 ##    @staticmethod
 ##    def synonyms(word):
-##        ## to-do: maybe this should not be in Library
+##        ## todo: maybe this should not be in Library
 ##        results = []
 ##        for synset in wn.synsets(word):
 ##            results.extend(synset.lemma_names)

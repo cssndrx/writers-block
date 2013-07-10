@@ -1,7 +1,8 @@
 import os
 import sys
 import time
-import nltk
+import nltk ## todo: this is sketch
+
 from PyQt4.QtCore import * 
 from PyQt4.QtGui import * 
 
@@ -13,12 +14,15 @@ font = QFont('Courier', 12, QFont.Light)
 
 def main():
     app = QApplication(sys.argv) 
-    w = MyWindow() 
+    w = MainWindow() 
     w.show()
 
     sys.exit(app.exec_()) 
 
 def is_keylogger():
+    """
+    Returns True if we are keylogging in order to offer suggestions (Windows-only)
+    """
     return os.name == 'nt' and IS_KEYLOGGER
     
 
@@ -50,8 +54,24 @@ def output_line():
 def output_word():
     return lbl()
 
-def output_grid():
-    pass
+def output_grid(entries):
+    """
+    Takes an iterable of tuple-pairs and returns a grid layout
+    """
+    grid = QGridLayout()
+    for i, (a, b) in enumerate(entries):
+        grid.addWidget(a, i, 0)
+        grid.addWidget(b, i, 1)
+    return grid
+
+def update_grid(grid, entries):
+    """
+    Takes an iterable of tuple-pairs and updates a grid layout
+    """
+    for i, (a, b) in enumerate(entries):
+        grid.itemAtPosition(i, 0).widget().setText(str(a))
+        grid.itemAtPosition(i, 1).widget().setText(str(b))
+
 
 def vstack_widgets(widgets, with_stretch=False):
     """
@@ -59,16 +79,26 @@ def vstack_widgets(widgets, with_stretch=False):
     """
     layout = QVBoxLayout()
     for i, w in enumerate(widgets):
-        layout.addWidget(w)
-
+        if isinstance(w, QWidget):
+            layout.addWidget(w)
+        elif isinstance(w, QLayout):
+            layout.addLayout(w)
+        else:
+            raise NotImplementedError('Tried to add unknown type %s to layout' % type(w))
+            
         if with_stretch and i%2==1:
             ## assumes that widgets are paired when adding stretches
             layout.addStretch(1)
 
     return layout
 
-        
-class MyWindow(QWidget): 
+
+def health_widget():
+    entries = [ (lbl(corpus_name), lbl()) for corpus_name in CORPORA.keys()]
+    return output_grid(entries)
+
+
+class MainWindow(QWidget): 
 
     def __init__(self, *args):
         
@@ -80,7 +110,7 @@ class MyWindow(QWidget):
         self.words = output_line()
         self.update_time = output_word()
         self.last_word = output_word()
-        self.corpora_health = output_grid()
+        self.corpora_health = health_widget()
 
 
         ## load the CEO for interacting with corpora
@@ -137,19 +167,32 @@ class MyWindow(QWidget):
         Called after user finishes typing a word
         """
         t1 = time.time()
+        word = self.get_last_word()
 
-        last_word = self.get_last_word()
-        if not last_word: return
-        self.last_word.setText(last_word)
-
-        corpus_output = CEO.word_lookup(last_word)
-        if corpus_output: self.output.setHtml(corpus_output)
+        if word:
+            self.update_last_word_widget(word)
+            self.update_suggestions_widget(word)
+            self.update_corpora_health_widget(word)
        
         t2 = time.time()
         time_taken = (t2-t1)*1000.0
         self.update_time.setText('%0.3f ms' % time_taken)
 
-            
+
+    def update_last_word_widget(self, word):
+        """
+        Update the last_word widget
+        """
+        self.last_word.setText(word)
+        
+    def update_suggestions_widget(self, word):
+        """
+        Update the suggestions widget if there are results
+        """
+        corpus_output = CEO.word_lookup(word)
+        if corpus_output:
+            self.output.setHtml(corpus_output)
+                
     def get_last_word(self):
         """
         Identifies the last word from either the Windows keylogger or the GUI element
@@ -163,12 +206,19 @@ class MyWindow(QWidget):
             last_word = words[-1] if len(words) > 0 else None
 
         return last_word
-        
+
+    def update_corpora_health_widget(self, word):
+        """
+        Update the corpora health widget if there are results
+        """
+        CEO.update_corpora_health(word)
+        corpora_health = CEO.get_corpora_health()
+        if corpora_health:
+            update_grid(self.corpora_health, corpora_health)
 
 class SpacebarTextEdit(QTextEdit):
     """
-    An input box that raises a QT SIGNAL
-    in response to the space bar
+    An input box that raises a QT SIGNAL in response to the space bar
     """
     def __init__(self, *args):
         QTextEdit.__init__(self, *args)
@@ -179,7 +229,7 @@ class SpacebarTextEdit(QTextEdit):
 
         return QTextEdit.event(self, event)
 
-
+        
 if __name__ == "__main__": 
     main()
 
@@ -197,18 +247,3 @@ if __name__ == "__main__":
 ##        else:
 ##            self.test_widget.hide()
 
-###### HEALTH STUFF #########
-##        # track the health
-##        healthGrid = QGridLayout()
-##
-##        self.healthLabel = []
-##        for i, corpus_name in enumerate(CORPORA.keys()):
-##            self.healthLabel.append( (QLabel(corpus_name), QLabel('-')) )
-##            healthGrid.addWidget(self.healthLabel[i][0], i, 0)
-##            healthGrid.addWidget(self.healthLabel[i][1], i, 1)
-
-
-##    def render_health(self):        
-##        for i, c in enumerate(Library.get_health()):
-##            self.healthLabel[i][0].setText(c.corpus_name)
-##            self.healthLabel[i][1].setText('%.2f' % c.get_health())
