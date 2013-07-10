@@ -135,7 +135,7 @@ class MainWindow(QWidget):
                         lbl('Suggestions'),
                         self.time_grep,
                         self.grep_widget,
-                        lbl('Word suggestions'),
+                        lbl('Synonyms'),
                         self.time_synonyms,
                         self.synonyms,
                         lbl('Generative text'),

@@ -5,13 +5,20 @@ from nltk.corpus import wordnet as wn
 from nltk_custom import CorpusText
 from config import CORPORA_FOLDER
 from utils import *
+import time
            
     
 class Corpus(object):
 
     def __init__(self, corpus_name, corpus):
         self.corpus_name = corpus_name
+
+        t1 = time.time()
         self.text = self.load_corpus(corpus)
+        t2 = time.time()
+        time_taken = (t2-t1)*1000.0
+        print 'Took %0.3f ms to load corpus %s' % (time_taken, self.corpus_name)
+
 
         ## dict of previously returned results (word -> MatrixResult object)
         ## todo: this will cause memory to grow as the program runs!!! should probably kick some things out
@@ -19,11 +26,17 @@ class Corpus(object):
 
         ## build indices before the gui renders
         ## (without this, you will notice a large lag after the user enters the first word)
+        t1 = time.time()
+
         self.text.concordance('blah')
         self.text.similar('blah')
         self.text.generate() #context=[], length=100)
         wn.synsets('blah')
-        
+
+        t2 = time.time()
+        time_taken = (t2-t1)*1000.0
+        print 'Took %0.3f ms to build indices for corpus %s' % (time_taken, self.corpus_name)
+
     def load_corpus(self, corpus): 
         tokens = self.corpus_to_tokens(corpus)
         return CorpusText(tokens)

@@ -184,36 +184,3 @@ class GrepManager(object):
             result += tokenwrap(row) + '<br>'
 
         return result
-
-
-##class Library(object):
-##    
-##    @classmethod
-##    def related_words(cls, word):
-##        return cls.hit_corpora('related_words', word)
-##
-##
-##
-##    @classmethod
-##    def get_health(cls):
-##        return sorted([corpus for corpus in cls.corpora],
-##                          reverse=True,
-##                          key = lambda x:x.get_health())
-##
-##    @classmethod
-##    def __str__(cls):
-##        return tokenwrap(str(c) for c in cls.corpora)
-##
-##    @staticmethod
-##    def synonyms(word):
-##        ## todo: maybe this should not be in Library
-##        results = []
-##        for synset in wn.synsets(word):
-##            results.extend(synset.lemma_names)
-##
-##        result_set = set(results)        
-##
-##        if word in result_set:
-##            result_set.remove(word)
-##
-##        return tokenwrap(result_set)
