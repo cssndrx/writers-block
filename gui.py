@@ -114,6 +114,10 @@ class MainWindow(QWidget):
         self.last_word = output_word()
         self.corpora_health = health_widget()
 
+        self.time_grep = lbl()
+        self.time_generative = lbl()
+        self.time_synonyms = lbl()
+
         ## load the CEO for interacting with corpora
         ceo = CEO()
 
@@ -129,10 +133,13 @@ class MainWindow(QWidget):
         wide_widgets = [lbl('Write here'),
                         self.input,
                         lbl('Suggestions'),
+                        self.time_grep,
                         self.grep_widget,
                         lbl('Word suggestions'),
+                        self.time_synonyms,
                         self.synonyms,
                         lbl('Generative text'),
+                        self.time_generative,
                         self.generative_text,
                         ]
         self.wide_layout = vstack_widgets(wide_widgets)
@@ -189,7 +196,7 @@ class MainWindow(QWidget):
         if word:
             self.update_last_word_widget(word)
             self.update_grep_widget(word)
-#            self.update_synonyms_widget(word)
+            self.update_synonyms_widget(word)
             self.update_generative_text_widget(word)
             self.update_corpora_health_widget(word)
        
@@ -208,10 +215,15 @@ class MainWindow(QWidget):
         """
         Update the suggestions widget if there are results
         """
-        ## todo: need to rename this.... this is terrible namign
+        t1 = time.time()
+
         corpus_output = CEO.grep(word)
         if corpus_output:
             self.grep_widget.setHtml(corpus_output)
+
+        t2 = time.time()
+        time_taken = (t2-t1)*1000.0
+        self.time_grep.setText('%0.3f ms' % time_taken)
                 
     def update_corpora_health_widget(self, word):
         """
@@ -223,14 +235,26 @@ class MainWindow(QWidget):
             update_grid(self.corpora_health, corpora_health)
 
     def update_synonyms_widget(self, word):
+        t1 = time.time()
+
         synonyms = CEO.synonyms(word)
         if synonyms:
             self.synonyms.setText(synonyms)
+
+        t2 = time.time()
+        time_taken = (t2-t1)*1000.0
+        self.time_synonyms.setText('%0.3f ms' % time_taken)
             
     def update_generative_text_widget(self, word):
+        t1 = time.time()
+
         generative_text = CEO.generate([word,])
         if generative_text:
             self.generative_text.setText(generative_text)
+
+        t2 = time.time()
+        time_taken = (t2-t1)*1000.0
+        self.time_generative.setText('%0.3f ms' % time_taken)
             
 class SpacebarTextEdit(QTextEdit):
     """
