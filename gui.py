@@ -107,11 +107,12 @@ class MainWindow(QWidget):
         ## attributes
         self.input = input_box()
         self.grep_widget = output_box()
+        self.generative_text = output_box()
         self.synonyms = output_line()
+
         self.update_time = output_word()
         self.last_word = output_word()
         self.corpora_health = health_widget()
-
 
         ## load the CEO for interacting with corpora
         ceo = CEO()
@@ -131,6 +132,8 @@ class MainWindow(QWidget):
                         self.grep_widget,
                         lbl('Word suggestions'),
                         self.synonyms,
+                        lbl('Generative text'),
+                        self.generative_text,
                         ]
         self.wide_layout = vstack_widgets(wide_widgets)
 
@@ -186,7 +189,8 @@ class MainWindow(QWidget):
         if word:
             self.update_last_word_widget(word)
             self.update_grep_widget(word)
-            self.update_synonyms_widget(word)
+#            self.update_synonyms_widget(word)
+            self.update_generative_text_widget(word)
             self.update_corpora_health_widget(word)
        
         t2 = time.time()
@@ -223,7 +227,11 @@ class MainWindow(QWidget):
         if synonyms:
             self.synonyms.setText(synonyms)
             
-
+    def update_generative_text_widget(self, word):
+        generative_text = CEO.generate([word,])
+        if generative_text:
+            self.generative_text.setText(generative_text)
+            
 class SpacebarTextEdit(QTextEdit):
     """
     An input box that raises a QT SIGNAL in response to the space bar

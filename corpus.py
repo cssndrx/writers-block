@@ -21,6 +21,7 @@ class Corpus(object):
         ## (without this, you will notice a large lag after the user enters the first word)
         self.text.concordance('blah')
         self.text.similar('blah')
+        self.text.generate()
         wn.synsets('blah')
         
     def load_corpus(self, corpus): 
