@@ -21,7 +21,7 @@ class Corpus(object):
         ## (without this, you will notice a large lag after the user enters the first word)
         self.text.concordance('blah')
         self.text.similar('blah')
-        self.text.generate()
+        self.text.generate() #context=[], length=100)
         wn.synsets('blah')
         
     def load_corpus(self, corpus): 
@@ -60,12 +60,12 @@ class Corpus(object):
     def related_words(self, word):
         return self.text.similar(word)
 
-    def generate(self, context=[]):
+    def generate(self, cntxt, lngth):
         """
         context := list of strings of nearby context upon which to generate
                     e.g ['Mighty', 'fine', 'day', 'we', 'have', 'here']
         """
-        return self.text.generate(context=context)
+        return self.text.generate(context=cntxt, length=lngth)
 
     def __str__(self):
         return self.corpus_name

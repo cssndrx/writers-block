@@ -5,8 +5,10 @@ from corpus import Corpus
 from config import CORPORA
 from utils import *
 
+NUM_WORDS_GENERATED = 50
+MAX_SYNONYMS_TO_RETURN = 5
 MAX_ROWS_DISPLAYED = 10
-MAX_WORDS_DISPLAYED = 8
+
 
 ## todo: this class should prob get moved to its own file
 class CEO(object):
@@ -77,11 +79,10 @@ class CEO(object):
 
         ### todo: stopped here... should filter these down to some reasonable thing
         ############ check if the above needs to be cached somewhere (maybe it is cached by wn.synsets?)
-##        manager = GrepManager(MAX_WORDS_DISPLAYED) 
-##        string_repr = manager.process_
-##        line = LineResult(list(result_set))
+        results = list(result_set)
+        results = results[:MAX_SYNONYMS_TO_RETURN]
 
-        return tokenwrap(result_set)
+        return tokenwrap(results)
 
     @classmethod
     def generate(cls, word):
@@ -89,7 +90,7 @@ class CEO(object):
         ## todo: may want to use multiple corpora
 
         ind = cls.corpora_health.index(max(cls.corpora_health))
-        return cls.corpora[ind].generate(word)
+        return cls.corpora[ind].generate(word, NUM_WORDS_GENERATED)
 
 ##        results = [corpus.generate(word) for corpus in cls.corpora]
 ##        return tokenwrap(results)
