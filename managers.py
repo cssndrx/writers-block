@@ -57,7 +57,7 @@ class CEO(object):
         results = [corpus.grep(word) for corpus in cls.corpora]
 
         ## pass the results to the manager
-        manager = GrepManager(MAX_ROWS_DISPLAYED)
+        manager = GrepManager()
         string_repr = manager.process_results(results)
 
         ## update the last_word that was looked up
@@ -75,9 +75,9 @@ class CEO(object):
         if word in result_set:
             result_set.remove(word)
 
-        ### stopped here... should filter these down to some reasonable thing
-        ############ the above needs to be cached somewhere
-##        manager = GrepManager(MAX_WORDS_DISPLAYED)
+        ### todo: stopped here... should filter these down to some reasonable thing
+        ############ check if the above needs to be cached somewhere (maybe it is cached by wn.synsets?)
+##        manager = GrepManager(MAX_WORDS_DISPLAYED) 
 ##        string_repr = manager.process_
 ##        line = LineResult(list(result_set))
 
@@ -106,24 +106,29 @@ class CEO(object):
             cls.corpora_health[i] += count
 
 
+##class SynonymsManager(object):
+##    def __init__(self, num_entries):
+##        self.num_entries = num_entries
+
+
 class GrepManager(object):
 
-    def __init__(self, num_rows):
+    def __init__(self, num_entries=MAX_ROWS_DISPLAYED):
         ## maximum number of rows to return
-        self.num_rows = num_rows 
+        self.num_entries = num_entries 
 
     def process_results(self, results):
         ## filter results to get rows sorted by score
-        matrix = GrepManager.filter_results(results, self.num_rows)
+        matrix = GrepManager.filter_results(results, self.num_entries)
 
         ## choose a formatting function that decorates words
-        formatted = GrepManager.format_matrix(matrix, default_word_format_func)
+        formatted = GrepManager.format_matrix(matrix, color_map_rare_words) #bold_rare_words) 
         
         ## return a string result
         return GrepManager.matrix_to_str(formatted)
 
     @staticmethod
-    def filter_results(results, num_rows):
+    def filter_results(results, num_entries):
         """
         Returns the best num_results of rows as ordered by their self-assigned rankings
         """
@@ -136,9 +141,9 @@ class GrepManager(object):
         ordered_rows = [row for (score, row) in zipped]
 
         ## return only the best num_results of rows
-        if len(ordered_rows) < num_rows:
+        if len(ordered_rows) < num_entries:
             return ordered_rows
-        return ordered_rows[:num_rows]
+        return ordered_rows[:num_entries]
 
     @staticmethod
     def format_matrix(matrix, word_format_func):
@@ -148,7 +153,6 @@ class GrepManager(object):
         tokens = []
         for word_list in matrix:
             row_tokens = []
-            dist = get_dist_in_english(word_list)
             for word in word_list:
                 row_tokens.append(word_format_func(word))
 
