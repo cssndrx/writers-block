@@ -8,7 +8,7 @@ CORPORA_FOLDER = 'data'
 
 CORPORA = {#'Teddy': 'teddy.txt',
             'Salinger': 'nine_stories.txt',
-            'Engelbart': '1962paper.txt',
+#            'Engelbart': '1962paper.txt',
             'Emma': nltk.corpus.gutenberg.words('austen-emma.txt'),
 #           'Romance': nltk.corpus.brown.sents(categories='romance')
            }

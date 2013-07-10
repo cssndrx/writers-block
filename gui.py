@@ -6,7 +6,7 @@ import nltk ## todo: this is sketch
 from PyQt4.QtCore import * 
 from PyQt4.QtGui import * 
 
-from corpus import CEO
+from managers import CEO
 from config import CORPORA, IS_KEYLOGGER
 
 ## todo: figure out where this should go
@@ -106,8 +106,8 @@ class MainWindow(QWidget):
 
         ## attributes
         self.input = input_box()
-        self.output = output_box()
-        self.words = output_line()
+        self.grep_widget = output_box()
+        self.synonyms = output_line()
         self.update_time = output_word()
         self.last_word = output_word()
         self.corpora_health = health_widget()
@@ -128,9 +128,9 @@ class MainWindow(QWidget):
         wide_widgets = [lbl('Write here'),
                         self.input,
                         lbl('Suggestions'),
-                        self.output,
+                        self.grep_widget,
                         lbl('Word suggestions'),
-                        self.words,
+                        self.synonyms,
                         ]
         self.wide_layout = vstack_widgets(wide_widgets)
 
@@ -161,38 +161,7 @@ class MainWindow(QWidget):
         else:
             self.connect(self.input, SIGNAL('SPACE_PRESSED'),
                          self.update)
-        
-    def update(self):
-        """
-        Called after user finishes typing a word
-        """
-        t1 = time.time()
-        word = self.get_last_word()
 
-        if word:
-            self.update_last_word_widget(word)
-            self.update_suggestions_widget(word)
-            self.update_corpora_health_widget(word)
-       
-        t2 = time.time()
-        time_taken = (t2-t1)*1000.0
-        self.update_time.setText('%0.3f ms' % time_taken)
-
-
-    def update_last_word_widget(self, word):
-        """
-        Update the last_word widget
-        """
-        self.last_word.setText(word)
-        
-    def update_suggestions_widget(self, word):
-        """
-        Update the suggestions widget if there are results
-        """
-        corpus_output = CEO.word_lookup(word)
-        if corpus_output:
-            self.output.setHtml(corpus_output)
-                
     def get_last_word(self):
         """
         Identifies the last word from either the Windows keylogger or the GUI element
@@ -206,7 +175,40 @@ class MainWindow(QWidget):
             last_word = words[-1] if len(words) > 0 else None
 
         return last_word
+        
+    def update(self):
+        """
+        Called after user finishes typing a word
+        """
+        t1 = time.time()
+        word = self.get_last_word()
 
+        if word:
+            self.update_last_word_widget(word)
+            self.update_grep_widget(word)
+            self.update_synonyms_widget(word)
+            self.update_corpora_health_widget(word)
+       
+        t2 = time.time()
+        time_taken = (t2-t1)*1000.0
+        self.update_time.setText('%0.3f ms' % time_taken)
+
+
+    def update_last_word_widget(self, word):
+        """
+        Update the last_word widget
+        """
+        self.last_word.setText(word)
+        
+    def update_grep_widget(self, word):
+        """
+        Update the suggestions widget if there are results
+        """
+        ## todo: need to rename this.... this is terrible namign
+        corpus_output = CEO.grep(word)
+        if corpus_output:
+            self.grep_widget.setHtml(corpus_output)
+                
     def update_corpora_health_widget(self, word):
         """
         Update the corpora health widget if there are results
@@ -215,6 +217,12 @@ class MainWindow(QWidget):
         corpora_health = CEO.get_corpora_health()
         if corpora_health:
             update_grid(self.corpora_health, corpora_health)
+
+    def update_synonyms_widget(self, word):
+        synonyms = CEO.synonyms(word)
+        if synonyms:
+            self.synonyms.setText(synonyms)
+            
 
 class SpacebarTextEdit(QTextEdit):
     """
@@ -237,7 +245,7 @@ if __name__ == "__main__":
 #### this is backwards looking.... so it doesn't work very well 
 ###        related_words = Library.related_words(last_word)
 ##        related_words = Library.synonyms(last_word)
-##        if related_words: self.words.setText(related_words)
+##        if related_words: self.synonyms.setText(related_words)
 
 
 ######## CHUCK WIDGET STUFF #########
