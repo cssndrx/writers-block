@@ -7,7 +7,7 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import * 
 
 from managers import CEO
-from config import CORPORA, IS_KEYLOGGER
+from config import CORPORA, IS_KEYLOGGER, USER_FOLDER
 
 ## todo: figure out where this should go
 font = QFont('Courier', 12, QFont.Light)
@@ -34,6 +34,9 @@ def input_box():
     inp = SpacebarTextEdit()
     inp.setFont(font)
     return inp
+
+def btn(init_text='-'):
+    return QPushButton(init_text)
 
 def lbl(init_text='-'):
     return QLabel(init_text)
@@ -109,6 +112,7 @@ class MainWindow(QWidget):
         self.grep_widget = output_box()
         self.generative_text = output_box()
         self.synonyms = output_line()
+        self.user_notifications = lbl('')
 
         self.update_time = output_word()
         self.last_word = output_word()
@@ -117,6 +121,8 @@ class MainWindow(QWidget):
         self.time_grep = lbl()
         self.time_generative = lbl()
         self.time_synonyms = lbl()
+
+        self.save_button = btn('Save as corpus')
 
         ## load the CEO for interacting with corpora
         ceo = CEO()
@@ -141,6 +147,7 @@ class MainWindow(QWidget):
                         lbl('Generative text'),
                         self.time_generative,
                         self.generative_text,
+                        self.user_notifications,
                         ]
         self.wide_layout = vstack_widgets(wide_widgets)
 
@@ -150,6 +157,7 @@ class MainWindow(QWidget):
                           self.last_word,
                           lbl('Corpora being used'),
                           self.corpora_health,
+                          self.save_button,
                           ]
         self.narrow_layout = vstack_widgets(narrow_widgets, with_stretch=True)
 
@@ -171,6 +179,32 @@ class MainWindow(QWidget):
         else:
             self.connect(self.input, SIGNAL('SPACE_PRESSED'),
                          self.update)
+
+
+        self.save_button.clicked.connect(self.save_as_corpus)
+
+    def name_new_corpus(self):
+        ## today's date and time
+        ## with what corpora it was based from?
+        return 'new_corpus.txt'
+
+    def save_as_corpus(self):
+        """
+        Saves user input as a corpus that can be hit upon in the future
+        """
+        corpus_name = self.name_new_corpus()
+        corpus_path = os.path.join(USER_FOLDER, corpus_name)
+        with open(corpus_path, 'w') as f:
+            f.write(self.input.toPlainText())
+
+        ## notify the user that this was a success
+        self.notify_user('New corpus generated!')
+
+    def notify_user(self, text):
+        """
+        Notify the user unobtrusively. Notice dissapears upon update
+        """
+        self.user_notifications.setText(text)
 
     def get_last_word(self):
         """
@@ -203,6 +237,9 @@ class MainWindow(QWidget):
         t2 = time.time()
         time_taken = (t2-t1)*1000.0
         self.update_time.setText('%0.3f ms' % time_taken)
+
+        ## clear leftover notifications
+        self.user_notifications.setText('')
 
 
     def update_last_word_widget(self, word):

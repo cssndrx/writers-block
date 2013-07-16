@@ -2,7 +2,7 @@ from nltk.util import tokenwrap
 from nltk.corpus import wordnet as wn
 
 from corpus import Corpus
-from config import CORPORA
+from config import CORPORA, IS_USING_USER_CORPORA
 from utils import *
 
 NUM_WORDS_GENERATED = 50
@@ -10,7 +10,7 @@ MAX_SYNONYMS_TO_RETURN = 5
 MAX_ROWS_DISPLAYED = 10
 
 
-## todo: this class should prob get moved to its own file
+## todo: this class should prob get moved to its own file. 
 class CEO(object):
     corpora = [] 
     corpora_health = []
@@ -34,6 +34,10 @@ class CEO(object):
         for corpus_name, corpus in CORPORA.iteritems():
             print 'Loading.....', corpus_name
             cls.corpora.append(Corpus(corpus_name, corpus))
+
+        if IS_USING_USER_CORPORA:
+            pass
+            ## stopped here.... todo
 
     @classmethod
     def get_corpora_names(cls):
