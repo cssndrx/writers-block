@@ -2,7 +2,6 @@ from nltk.util import tokenwrap
 from nltk.corpus import wordnet as wn
 
 from corpus import Corpus
-from config import CORPORA, IS_USING_USER_CORPORA
 from utils import *
 
 NUM_WORDS_GENERATED = 50
@@ -31,14 +30,10 @@ class CEO(object):
         One-time load of the corpora specified in the config file.
         """
         print 'Loading corpora.....'
-        for corpus_name, corpus in CORPORA.iteritems():
+        for corpus_name, corpus in get_corpora().iteritems():
             print 'Loading.....', corpus_name
             cls.corpora.append(Corpus(corpus_name, corpus))
-
-        if IS_USING_USER_CORPORA:
-            pass
-            ## stopped here.... todo
-
+        
     @classmethod
     def get_corpora_names(cls):
         return [c.corpus_name for c in cls.corpora]

@@ -7,7 +7,8 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import * 
 
 from managers import CEO
-from config import CORPORA, IS_KEYLOGGER, USER_FOLDER
+from config import IS_KEYLOGGER, USER_FOLDER
+from utils import *
 
 ## todo: figure out where this should go
 font = QFont('Courier', 12, QFont.Light)
@@ -97,7 +98,7 @@ def vstack_widgets(widgets, with_stretch=False):
 
 
 def health_widget():
-    entries = [ (lbl(corpus_name), lbl()) for corpus_name in CORPORA.keys()]
+    entries = [ (lbl(corpus_name), lbl()) for corpus_name in get_corpora().keys()]
     return output_grid(entries)
 
 

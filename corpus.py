@@ -3,7 +3,7 @@ import nltk
 from nltk.corpus import wordnet as wn
 
 from nltk_custom import CorpusText
-from config import CORPORA_FOLDER
+from config import CORPORA_FOLDER, USER_FOLDER
 from utils import *
 import time
            
@@ -43,9 +43,15 @@ class Corpus(object):
 
     def corpus_to_tokens(self, corpus):
         if isinstance(corpus, str):
-            with open(os.path.join(CORPORA_FOLDER, corpus), 'r') as f:
-                raw = f.read()
-                tokens = nltk.wordpunct_tokenize(raw)
+            try:
+                with open(os.path.join(CORPORA_FOLDER, corpus), 'r') as f:
+                    raw = f.read()
+                    tokens = nltk.wordpunct_tokenize(raw)
+            except:
+                ## gah this is a total hack
+                with open(os.path.join(USER_FOLDER, corpus), 'r') as f:
+                    raw = f.read()
+                    tokens = nltk.wordpunct_tokenize(raw)
         elif isinstance(corpus, nltk.corpus.reader.util.ConcatenatedCorpusView):
             tokens = list(itertools.chain(*corpus))
         elif isinstance(corpus, nltk.corpus.reader.util.StreamBackedCorpusView):
