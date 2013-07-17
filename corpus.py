@@ -1,4 +1,5 @@
 import os
+import re
 import nltk
 from nltk.corpus import wordnet as wn
 
@@ -85,6 +86,10 @@ class Corpus(object):
                     e.g ['Mighty', 'fine', 'day', 'we', 'have', 'here']
         """
         return self.text.generate(context=cntxt, length=lngth)
+
+    def sandwich(self, word_b, word_a='a'):
+        result_set = set(re.findall(word_a + r' \w+ ' + word_b, wrap(self.text)))
+        return wrap(r + '\n' for r in result_set)
 
     def __str__(self):
         return self.corpus_name

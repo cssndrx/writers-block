@@ -29,6 +29,32 @@ from nltk.model import NgramModel
 
 import nltk
 
+class StaticGoodness(object):
+    """
+    Object to judge the "goodness" or interesting-ness of text.
+    Not inherited from nltk. todo: perhaps this should be moved elsewhere like Corpus
+    """
+    def __init__(self, text):
+        pass
+
+    def get_goodness(self):
+
+        ## frequency distribution on words
+
+        ## humans determine goodness by comparing against a reference
+
+        ## different goodness depending on what you are doing
+        ## creative writing:
+        ## technical writing:
+
+        ## unusualness and ability to make you think
+
+        ## disorder constrained by 
+
+
+        ## the easiest heuristic is just to do it based on length
+        pass
+    
 class CorpusText(nltk.Text):
     def concordance(self, word, width=79, lines=25):
         """

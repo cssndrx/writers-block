@@ -113,6 +113,7 @@ class MainWindow(QWidget):
         self.grep_widget = output_box()
         self.generative_text = output_box()
         self.synonyms = output_line()
+        self.sandwich = output_box()
         self.user_notifications = lbl('')
 
         self.update_time = output_word()
@@ -148,6 +149,8 @@ class MainWindow(QWidget):
                         lbl('Generative text'),
                         self.time_generative,
                         self.generative_text,
+                        lbl('Sandwich'),
+                        self.sandwich,
                         self.user_notifications,
                         ]
         self.wide_layout = vstack_widgets(wide_widgets)
@@ -238,6 +241,7 @@ class MainWindow(QWidget):
             self.update_synonyms_widget(word)
             self.update_generative_text_widget(word)
             self.update_corpora_health_widget(word)
+            self.update_sandwich_widget(word)
        
         t2 = time.time()
         time_taken = (t2-t1)*1000.0
@@ -297,6 +301,12 @@ class MainWindow(QWidget):
         t2 = time.time()
         time_taken = (t2-t1)*1000.0
         self.time_generative.setText('%0.3f ms' % time_taken)
+
+    def update_sandwich_widget(self, word):
+        ## regex sandwich widget?
+        sandwich_text = CEO.sandwich(word)
+        if sandwich_text:
+            self.sandwich.setText(sandwich_text)
             
 class SpacebarTextEdit(QTextEdit):
     """
