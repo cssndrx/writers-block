@@ -186,8 +186,12 @@ class MainWindow(QWidget):
 
     def name_new_corpus(self):
         ## today's date and time
+        date_time = get_datetime_as_str()
+
         ## with what corpora it was based from?
-        return 'new_corpus.txt'
+        get_corpora_names = wrap(CEO.get_corpora_names())
+
+        return date_time + ' ' + get_corpora_names + '.txt'
 
     def save_as_corpus(self):
         """
